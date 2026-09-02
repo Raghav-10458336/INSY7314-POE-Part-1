@@ -1,0 +1,42 @@
+require('dotenv').config()
+const fs = require('fs')
+const path = require('path')
+const https = require('https')
+const express = require('express')
+const helmet = require('helmet')
+const cors = require('cors')
+
+const authRoutes = require('./routes/authRoutes')
+const errorHandler = require('./middleware/errorHandler')
+
+const app = express()
+
+app.use(helmet())
+app.use(cors())
+app.use(express.json())
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' })
+})
+
+app.use('/api/auth', authRoutes)
+
+app.use((req, res, next) => {
+  res.status(404).json({ error: 'not found' })
+})
+
+app.use(errorHandler)
+
+// generate local certs: openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes -subj "/CN=localhost"
+const options = {
+  key: fs.readFileSync(path.join(__dirname, 'certs', 'key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, 'certs', 'cert.pem'))
+}
+
+const PORT = process.env.PORT || 5000
+
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`server running on https://localhost:${PORT}`)
+})
+
+module.exports = app
