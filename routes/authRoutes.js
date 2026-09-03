@@ -1,6 +1,21 @@
 const express = require('express')
 const router = express.Router()
 
-// register and login handlers go here
+const {
+    register,
+    login
+} = require('../controllers/authController')
+
+const authenticateToken = require('../middleware/authMiddleware')
+
+router.post('/register', register)
+router.post('/login', login)
+
+router.get('/me', authenticateToken, (req, res) => {
+    res.status(200).json({
+        message: 'protected route accessed successfully',
+        user: req.user
+    })
+})
 
 module.exports = router
