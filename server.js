@@ -27,7 +27,7 @@ app.use((req, res, next) => {
 
 app.use(errorHandler)
 
-// generate local certs: openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes -subj "/CN=localhost"
+// no certs yet? run: node generateCert.js
 const options = {
   key: fs.readFileSync(path.join(__dirname, 'certs', 'key.pem')),
   cert: fs.readFileSync(path.join(__dirname, 'certs', 'cert.pem'))
