@@ -116,3 +116,24 @@ The major architectural components are:
 
 The architecture separates responsibilities between the frontend, backend, and database. This separation improves maintainability and allows security controls to be enforced centrally within the backend.
 
+---
+
+# 5. Security Decisions
+
+This section explains the security decisions made in the current implementation and the reasoning behind them. It currently covers transport security and error handling. Password hashing, JWT, and input validation will be documented here as those sections are completed.
+
+## 5.1 HTTPS
+
+The API is served over HTTPS only. A plain HTTP server was not used at any point, including during local development.
+
+This decision was made because the system handles user credentials, JWT tokens, and will later handle transaction and income data. Without HTTPS, this information would travel between the client and the server as plain text, meaning anyone able to observe network traffic could read it directly. Encrypting the connection removes this risk regardless of the network the client is on.
+
+For local development, a self signed certificate is generated with `generateCert.js` and loaded by the server using Node's built in `https` module. A self signed certificate is acceptable for this stage of the project because there is no public domain to issue a certificate for yet. In a deployed environment, this would be replaced with a certificate from a trusted certificate authority.
+
+## 5.2 Error Handling
+
+All errors in the API pass through one centralised error handling middleware in `middleware/errorHandler.js`, rather than being handled individually in each route.
+
+This decision was made to guarantee that error responses are consistent and that internal details never reach the client. Node and Express errors can contain stack traces, file paths, or details about how a request failed internally. Returning this information to a client would expose implementation details that could be used to find weaknesses in the system. To prevent this, the error handler only ever returns a status code and a short message.
+
+Two kinds of errors are distinguished. Errors that a route deliberately raises using the `ApiError` class, such as a duplicate email during registration or an incorrect password during login, are safe to show to the client because the application itself defined the message. Any other error, including unexpected failures from third party libraries, falls back to a generic message based on its status code, so nothing internal is ever exposed by accident.
