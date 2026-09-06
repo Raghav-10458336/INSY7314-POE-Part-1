@@ -117,6 +117,51 @@ The major architectural components are:
 
 The architecture separates responsibilities between the frontend, backend, and database. This separation improves maintainability and allows security controls to be enforced centrally within the backend.
 
+## 4.1 Backend Structure
+
+The backend follows a modular structure that separates routing, request
+validation, authentication, business logic, data models and error handling.
+
+The main backend components are:
+
+- `routes/` – Defines API endpoints and maps requests to controllers.
+- `controllers/` – Contains the main application and authentication logic.
+- `models/` – Defines the structure used for user and application data.
+- `middleware/` – Provides reusable security and request-processing controls,
+  including authentication, validation and error handling.
+- `server.js` – Initialises the Express application and HTTPS server.
+- `cert/` – Contains the locally configured SSL certificate and private key
+  required for HTTPS development.
+- `postman/` – Contains the Postman collection used to test API functionality
+  and security scenarios.
+
+This separation ensures that routing, authentication, validation and business
+logic are not unnecessarily combined into a single component. It improves
+maintainability and allows security controls to be applied consistently across
+the API.
+
+## 4.2 API Request Flow
+
+A typical request to the HustleHub+ API follows the following process:
+
+1. A user interacts with the React frontend.
+2. The frontend sends an HTTPS request to the Express API.
+3. The request is received by the Node.js/Express server.
+4. The appropriate route identifies the requested API endpoint.
+5. Validation middleware checks that the supplied input is valid.
+6. Authentication middleware verifies the JWT when the endpoint is protected.
+7. The request is passed to the appropriate controller.
+8. The controller performs the required business logic.
+9. The relevant data is accessed through the application's data layer.
+10. The server returns a controlled JSON response to the frontend.
+
+For unauthenticated requests, such as registration and login, authentication
+middleware is not required. For protected endpoints, the JWT must be supplied
+and successfully validated before the request can proceed.
+
+If validation or authentication fails, the request is rejected before the
+protected business logic is executed.
+
 ---
 
 # 5. Security Decisions
@@ -340,6 +385,24 @@ When a valid JWT is supplied, the protected endpoint can be accessed.
 When no JWT is supplied, the request is rejected.
 
 This demonstrates that authentication is enforced at the backend API level.
+
+### JWT Lifecycle
+
+The JWT authentication process follows these steps:
+
+1. The user submits their email and password through the login endpoint.
+2. The server validates the submitted input.
+3. The submitted password is compared against the stored password hash.
+4. If the credentials are valid, the server generates a JWT containing the
+   appropriate user identification information.
+5. The JWT is returned to the client after successful authentication.
+6. The client supplies the JWT when accessing protected API endpoints.
+7. Authentication middleware verifies the token before allowing the request
+   to continue.
+8. If the token is missing, invalid or expired, the API rejects the request.
+
+The JWT secret is stored outside the source code using environment
+configuration rather than being hard-coded into the application.
 
 ---
 
