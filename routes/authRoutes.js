@@ -7,9 +7,25 @@ const {
 } = require('../controllers/authController')
 
 const authenticateToken = require('../middleware/authMiddleware')
+const {
+    registerValidation,
+    loginValidation,
+    handleValidationErrors
+} = require('../middleware/validation')
 
-router.post('/register', register)
-router.post('/login', login)
+router.post(
+    '/register',
+    registerValidation,
+    handleValidationErrors,
+    register
+)
+
+router.post(
+    '/login',
+    loginValidation,
+    handleValidationErrors,
+    login
+)
 
 router.get('/me', authenticateToken, (req, res) => {
     res.status(200).json({

@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": "1788686826170",
+    "name": "Member Four Test",
+    "email": "member4.1788686824522@example.com",
+    "password": "$2b$10$ir5nwftlrL4XBrdOSpotQOcu1Ryh/gsb/4OLgnKbQnwDMIRTgdoaW",
+    "role": "client"
+  },
+  {
+    "id": "1788686908809",
+    "name": "Member Four Test",
+    "email": "member4.1788686907643@example.com",
+    "password": "$2b$10$8IN1bylW.g9..STrhIe4hOTE26EpJrMI.m0GzM0x/5vZKxIQhlJyi",
+    "role": "client"
+  },
+  {
+    "id": "1788687279130",
+    "name": "Member Four Test",
+    "email": "member4.1788687277724@example.com",
+    "password": "$2b$10$nmTOvgUkARfRe5LEuZ5oFerm84GWizX6DaStDpPtWgg05Vrftj94W",
+    "role": "client"
+  }
+]

@@ -1,0 +1,220 @@
+{
+  "info": {
+    "_postman_id": "98c704c1-49ca-46ac-8b47-d91d9f9e8c1a",
+    "name": "HustleHub+ API - Member 4 Validation & Testing",
+    "description": "INSY7314 POE Part 1 validation and authentication test collection. The API uses a self-signed HTTPS certificate during local development, so disable SSL certificate verification in Postman Settings if required.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://localhost:5000" },
+    { "key": "testEmail", "value": "" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+          "pm.test('API is healthy', function () { pm.expect(pm.response.json().status).to.eql('ok'); });"
+        ] }
+      }]
+    },
+    {
+      "name": "02 - Register - Happy Path",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": { "exec": [
+            "const email = `member4.${Date.now()}@example.com`;",
+            "pm.collectionVariables.set('testEmail', email);"
+          ] }
+        },
+        {
+          "listen": "test",
+          "script": { "exec": [
+            "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+            "pm.test('Registration succeeds', function () { pm.expect(pm.response.json().message).to.eql('user registered successfully'); });",
+            "pm.test('Password is not returned', function () { pm.expect(pm.response.text()).to.not.include('password'); });"
+          ] }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Member Four Test\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"client\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+      }
+    },
+    {
+      "name": "03 - Register - Duplicate Email",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Duplicate Test\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"client\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+          "pm.test('Duplicate email is rejected', function () { pm.expect(pm.response.json().error).to.eql('email already registered'); });"
+        ] }
+      }]
+    },
+    {
+      "name": "04 - Login - Happy Path",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPass123!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+          "const body = pm.response.json();",
+          "pm.test('JWT token is returned', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
+          "if (body.token) { pm.collectionVariables.set('token', body.token); }"
+        ] }
+      }]
+    },
+    {
+      "name": "05 - Login - Wrong Password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword123!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 401', function () { pm.response.to.have.status(401); });",
+          "pm.test('Invalid credentials are rejected', function () { pm.expect(pm.response.json().error).to.eql('invalid email or password'); });"
+        ] }
+      }]
+    },
+    {
+      "name": "06 - Register - Missing Fields",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Incomplete User\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+          "pm.test('Validation details are returned', function () { const b = pm.response.json(); pm.expect(b.error).to.eql('validation failed'); pm.expect(b.details).to.be.an('array').that.is.not.empty; });"
+        ] }
+      }]
+    },
+    {
+      "name": "07 - Register - Invalid Email",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Invalid Email\",\n  \"email\": \"not-an-email\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"client\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+          "pm.test('Email validation fires', function () { const b = pm.response.json(); pm.expect(b.details.some(e => e.field === 'email')).to.eql(true); });"
+        ] }
+      }]
+    },
+    {
+      "name": "08 - Register - Invalid Role",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Role Test\",\n  \"email\": \"role.test@example.com\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"admin\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+          "pm.test('Unsafe role is rejected', function () { const b = pm.response.json(); pm.expect(b.details.some(e => e.field === 'role')).to.eql(true); });"
+        ] }
+      }]
+    },
+    {
+      "name": "09 - Malformed JSON",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"broken@example.com\",\n  \"password\": \"TestPass123!\",\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+          "pm.test('No stack trace is exposed', function () { pm.expect(pm.response.text().toLowerCase()).to.not.include('stack'); });"
+        ] }
+      }]
+    },
+    {
+      "name": "10 - Protected Route - Valid JWT",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
+        "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+          "pm.test('Protected route is accessible with JWT', function () { pm.expect(pm.response.json().message).to.eql('protected route accessed successfully'); });"
+        ] }
+      }]
+    },
+    {
+      "name": "11 - Protected Route - Missing JWT",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status is 401', function () { pm.response.to.have.status(401); });"
+        ] }
+      }]
+    }
+  ]
+}
