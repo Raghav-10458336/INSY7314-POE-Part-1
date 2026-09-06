@@ -1,5 +1,6 @@
 # INSY7314-POE-Part-1
 # HustleHub+
+Youtube Link : https://www.youtube.com/watch?v=kaYdJBTt3bg
 
 ## Secure Freelance Marketplace Platform
 
@@ -120,20 +121,233 @@ The architecture separates responsibilities between the frontend, backend, and d
 
 # 5. Security Decisions
 
-This section explains the security decisions made in the current implementation and the reasoning behind them. It currently covers transport security and error handling. Password hashing, JWT, and input validation will be documented here as those sections are completed.
+This section explains the security decisions implemented in the current version of HustleHub+ and the reasoning behind them.
+
+The current implementation includes:
+
+- HTTPS transport security
+- Centralised error handling
+- Password hashing
+- JSON Web Token (JWT) authentication
+- Input validation
+- Input sanitisation
+- Role restrictions
+- Protected API routes
+- API testing using Postman
+
+These controls are implemented mainly within the backend because security-sensitive decisions should not rely only on frontend restrictions.
+
+---
 
 ## 5.1 HTTPS
 
-The API is served over HTTPS only. A plain HTTP server was not used at any point, including during local development.
+The API is served over HTTPS rather than plain HTTP.
 
-This decision was made because the system handles user credentials, JWT tokens, and will later handle transaction and income data. Without HTTPS, this information would travel between the client and the server as plain text, meaning anyone able to observe network traffic could read it directly. Encrypting the connection removes this risk regardless of the network the client is on.
+This decision was made because the system handles sensitive information such as user credentials, authentication tokens, booking information, transaction information and other user-related data.
 
-For local development, a self signed certificate is generated with `generateCert.js` and loaded by the server using Node's built in `https` module. A self signed certificate is acceptable for this stage of the project because there is no public domain to issue a certificate for yet. In a deployed environment, this would be replaced with a certificate from a trusted certificate authority.
+Without HTTPS, data transmitted between the client and server could potentially be exposed while travelling across a network.
+
+For local development, HustleHub+ uses a self-signed HTTPS certificate. The certificate can be generated automatically during setup and is loaded by the Node.js server using the built-in HTTPS module.
+
+A self-signed certificate is suitable for the local development environment. In a production environment, this certificate would be replaced with one issued by a trusted certificate authority.
+
+---
 
 ## 5.2 Error Handling
 
-All errors in the API pass through one centralised error handling middleware in `middleware/errorHandler.js`, rather than being handled individually in each route.
+All API errors are processed through centralised Express error-handling middleware rather than returning uncontrolled error information directly to the client.
 
-This decision was made to guarantee that error responses are consistent and that internal details never reach the client. Node and Express errors can contain stack traces, file paths, or details about how a request failed internally. Returning this information to a client would expose implementation details that could be used to find weaknesses in the system. To prevent this, the error handler only ever returns a status code and a short message.
+This provides consistent JSON responses and helps prevent internal implementation details from being exposed.
 
-Two kinds of errors are distinguished. Errors that a route deliberately raises using the `ApiError` class, such as a duplicate email during registration or an incorrect password during login, are safe to show to the client because the application itself defined the message. Any other error, including unexpected failures from third party libraries, falls back to a generic message based on its status code, so nothing internal is ever exposed by accident.
+Sensitive information such as stack traces, internal file paths and library error details should not be returned to users.
+
+The system therefore returns controlled error responses containing an appropriate HTTP status code and a short message.
+
+Expected application errors, such as duplicate registrations or incorrect login credentials, can return appropriate client-facing messages.
+
+Unexpected internal errors are handled safely so that unnecessary technical details are not exposed.
+
+---
+
+## 5.3 Password Security
+
+User passwords are not stored as plain text.
+
+During registration, passwords are hashed using bcrypt before being stored.
+
+Password hashing is important because if application data were exposed, plain-text passwords would immediately reveal user credentials.
+
+During login, the submitted password is compared against the stored password hash.
+
+The original password does not need to be stored or recovered.
+
+---
+
+## 5.4 JSON Web Token Authentication
+
+HustleHub+ uses JSON Web Tokens (JWT) for authentication.
+
+After a user successfully logs in, the backend issues a JWT containing information required to identify the authenticated user.
+
+The token is then supplied with requests to protected API routes.
+
+Authentication middleware validates the token before allowing the request to continue.
+
+If a token is missing, invalid or expired, access to the protected route is denied.
+
+This allows protected backend functionality to remain inaccessible to unauthenticated users.
+
+---
+
+## 5.5 Input Validation
+
+Server-side validation is implemented for both registration and login requests.
+
+Validation is performed using Express Validator before authentication logic is executed.
+
+Registration validation checks information such as:
+
+- Required name fields
+- Valid email format
+- Required password
+- Minimum password length
+- Valid user role
+
+Login validation checks:
+
+- Email address
+- Password
+- Required fields
+
+Invalid requests are rejected with an appropriate `400 Bad Request` response before they reach the main authentication controller.
+
+Server-side validation is necessary because frontend validation can be bypassed by manually sending API requests.
+
+---
+
+## 5.6 Role Restrictions
+
+HustleHub+ distinguishes between different user roles, including:
+
+- Client
+- Freelancer
+- Administrator
+
+Public registration is restricted so that users cannot simply manipulate an API request to assign themselves an administrator role.
+
+Role restrictions support the overall role-based access control approach used by the platform.
+
+Administrative functionality must only be accessible to users who have been granted the appropriate permissions.
+
+---
+
+## 5.7 Protected Routes
+
+Protected API routes require a valid JWT.
+
+The authentication middleware checks the supplied token before allowing access.
+
+A valid token allows the authenticated request to continue.
+
+A missing or invalid token results in an unauthorised response.
+
+A protected authentication test route is included in the current implementation to demonstrate this behaviour.
+
+---
+
+# 6. Input Validation and API Testing
+
+HustleHub+ includes a Postman collection that tests the authentication API and validation behaviour.
+
+The testing collection covers both successful and unsuccessful requests.
+
+The following scenarios are tested:
+
+1. API health check
+2. Successful user registration
+3. Duplicate email registration
+4. Successful login
+5. Incorrect password
+6. Missing registration fields
+7. Invalid email address
+8. Invalid user role
+9. Malformed JSON
+10. Protected route with valid JWT
+11. Protected route without JWT
+
+These tests confirm that the API correctly handles both valid requests and common invalid or malicious inputs.
+
+---
+
+## 6.1 Successful Registration
+
+A valid registration request should pass validation and create the new user.
+
+The API returns a successful response indicating that registration has completed correctly.
+
+---
+
+## 6.2 Duplicate User Testing
+
+The same email address cannot be registered more than once.
+
+Attempting to register an existing email produces a controlled error response.
+
+This helps preserve the uniqueness of user accounts.
+
+---
+
+## 6.3 Login Testing
+
+A user with valid credentials can log in successfully.
+
+Following successful authentication, a JWT is returned.
+
+The Postman collection stores the token so that it can be used in subsequent protected-route tests.
+
+---
+
+## 6.4 Invalid Credential Testing
+
+Incorrect login credentials are rejected.
+
+For example, supplying an incorrect password results in an unauthorised response instead of granting access.
+
+---
+
+## 6.5 Validation Testing
+
+The Postman collection includes multiple requests specifically designed to verify the validation middleware.
+
+Examples include:
+
+- Missing required fields
+- Invalid email addresses
+- Invalid roles
+- Incorrect passwords
+- Malformed JSON
+
+These tests demonstrate that invalid input is rejected safely before normal business logic continues.
+
+---
+
+## 6.6 JWT Protected Route Testing
+
+The authentication flow is tested using both valid and missing authentication tokens.
+
+When a valid JWT is supplied, the protected endpoint can be accessed.
+
+When no JWT is supplied, the request is rejected.
+
+This demonstrates that authentication is enforced at the backend API level.
+
+---
+
+# 7. Postman Collection
+
+The project contains a Postman collection for testing the API.
+
+The collection can be found in:
+
+```text
+postman/HustleHub_API.postman_collection.json
