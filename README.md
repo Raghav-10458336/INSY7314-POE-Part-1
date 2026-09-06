@@ -1,6 +1,6 @@
 # INSY7314-POE-Part-1
 # HustleHub+
-Youtube Link : https://www.youtube.com/watch?v=kaYdJBTt3bg
+Youtube Link : https://youtu.be/AwQ5rBtG09k
 
 ## Secure Freelance Marketplace Platform
 
