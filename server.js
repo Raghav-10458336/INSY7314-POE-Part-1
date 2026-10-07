@@ -5,11 +5,15 @@ const https = require('https')
 const express = require('express')
 const helmet = require('helmet')
 const cors = require('cors')
+const connectDB = require('./config/db')
 
 const authRoutes = require('./routes/authRoutes')
+const gigRoutes = require('./routes/gigRoutes')
 const errorHandler = require('./middleware/errorHandler')
 
 const app = express()
+
+connectDB()
 
 app.use(helmet())
 app.use(cors())
@@ -20,6 +24,7 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/gigs', gigRoutes)
 
 app.use((req, res, next) => {
   res.status(404).json({ error: 'not found' })
@@ -40,3 +45,5 @@ https.createServer(options, app).listen(PORT, () => {
 })
 
 module.exports = app
+
+
