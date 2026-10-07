@@ -414,3 +414,416 @@ The collection can be found in:
 
 ```text
 postman/HustleHub_API.postman_collection.json
+
+---
+
+---
+
+# 8. Part 2 - Member 1: Project Setup and Gig Management
+
+## 8.1 MongoDB Integration
+
+For Part 2, the backend was extended from the Part 1 secure foundation to use MongoDB through Mongoose.
+
+The MongoDB connection is configured in:
+
+```text
+config/db.js
+```
+
+The MongoDB connection string is stored in the `.env` file using the `MONGO_URI` environment variable.
+
+When the Node.js server starts, the application connects to MongoDB before marketplace functionality is used.
+
+This provides persistent storage for marketplace data such as freelancer gigs.
+
+The MongoDB Atlas database used during development is not hard-coded into the project. Sensitive database credentials remain inside the local `.env` configuration and are excluded from GitHub.
+
+---
+
+## 8.2 Gig Model
+
+A Mongoose `Gig` model was created in:
+
+```text
+models/Gig.js
+```
+
+Each gig stores the following information:
+
+- Title
+- Description
+- Category
+- Price
+- Delivery time in days
+- Freelancer owner ID
+- Active status
+- Creation timestamp
+- Last updated timestamp
+
+The freelancer owner ID is not accepted from the browser when a gig is created.
+
+Instead, the owner is taken directly from the authenticated JWT:
+
+```javascript
+freelancer: req.user.id
+```
+
+This prevents a freelancer from creating a gig while pretending to be another user.
+
+---
+
+## 8.3 Gig Management API
+
+The following gig endpoints were implemented:
+
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/gigs` | Public | View active gigs |
+| GET | `/api/gigs/my` | Freelancer | View the authenticated freelancer's gigs |
+| POST | `/api/gigs` | Freelancer | Create a new gig |
+| PUT | `/api/gigs/:id` | Freelancer + Owner | Update an owned gig |
+| DELETE | `/api/gigs/:id` | Freelancer + Owner | Delete an owned gig |
+
+The public gig endpoint provides marketplace data that can later be used by the client browsing and booking functionality developed elsewhere in Part 2.
+
+---
+
+## 8.4 Freelancer Role Protection
+
+Protected gig-management routes use the existing JWT authentication middleware from Part 1.
+
+After authentication, the decoded JWT is made available as:
+
+```javascript
+req.user
+```
+
+The JWT contains the user's:
+
+```text
+id
+role
+```
+
+Gig-management routes additionally use role middleware so that only accounts with the `freelancer` role may create, update or delete gigs.
+
+For example:
+
+```javascript
+authenticateToken,
+authorizeRoles('freelancer')
+```
+
+A user without the required role receives a controlled `403 Forbidden` response.
+
+---
+
+## 8.5 Gig Ownership Protection
+
+A major security requirement for gig management is ensuring that one freelancer cannot modify another freelancer's data.
+
+The backend enforces ownership when updating and deleting gigs.
+
+The database query checks both:
+
+```text
+Gig ID
+AND
+Authenticated Freelancer ID
+```
+
+For example:
+
+```javascript
+{
+    _id: req.params.id,
+    freelancer: req.user.id
+}
+```
+
+Therefore, knowing another gig's MongoDB ID is not sufficient to update or delete it.
+
+If Freelancer B attempts to update or delete a gig belonging to Freelancer A, the request is rejected with a controlled response:
+
+```json
+{
+    "error": "gig not found or access denied"
+}
+```
+
+This ownership check is performed in the backend rather than relying on frontend restrictions.
+
+---
+
+## 8.6 Gig Input Validation
+
+Gig requests are validated using `express-validator`.
+
+Validation rules are applied to:
+
+- Title
+- Description
+- Category
+- Price
+- Delivery days
+- Active status
+
+Examples of validation rules include:
+
+- Gig title must be between 3 and 80 characters.
+- Description must be between 10 and 1000 characters.
+- Price may not be negative.
+- Delivery days must be between 1 and 365.
+- Active status must contain a valid Boolean value.
+
+Invalid input is rejected before the request reaches the gig controller.
+
+This provides server-side validation even if browser-based validation is bypassed.
+
+---
+
+## 8.7 React Gig Management Interface
+
+A React frontend was added in:
+
+```text
+frontend/
+```
+
+The freelancer-facing **My Gigs** interface allows an authenticated freelancer to:
+
+- View their own gigs
+- Create a new gig
+- Edit an existing gig
+- Delete a gig
+- View a gig's category
+- View pricing
+- View delivery time
+- View whether the gig is active
+- Receive success messages
+- Receive controlled error messages
+
+The main Member 1 React files include:
+
+```text
+frontend/src/api/api.js
+frontend/src/components/GigForm.jsx
+frontend/src/components/GigCard.jsx
+frontend/src/pages/MyGigsPage.jsx
+frontend/src/App.jsx
+frontend/src/index.css
+```
+
+---
+
+## 8.8 Frontend API Integration
+
+Axios is used to communicate with the Node.js/Express backend.
+
+The API helper is configured in:
+
+```text
+frontend/src/api/api.js
+```
+
+For protected requests, the frontend reads the JWT token from browser local storage and sends it using the HTTP `Authorization` header:
+
+```text
+Authorization: Bearer <token>
+```
+
+This allows the backend authentication middleware to identify the logged-in user before allowing access to protected routes.
+
+---
+
+## 8.9 Create Gig Flow
+
+When a freelancer creates a gig:
+
+1. The freelancer enters the gig information in the React form.
+2. The frontend submits the request to:
+
+```text
+POST /api/gigs
+```
+
+3. The JWT is supplied in the Authorization header.
+4. Authentication middleware verifies the token.
+5. Role middleware verifies that the user is a freelancer.
+6. Gig input validation is applied.
+7. The backend assigns the authenticated user's ID as the gig owner.
+8. The gig is stored in MongoDB.
+9. A success response is returned.
+10. The React interface refreshes the freelancer's gig list.
+
+---
+
+## 8.10 Update Gig Flow
+
+A freelancer can edit an existing gig by selecting the **Edit** button in the My Gigs interface.
+
+The React form is populated using the existing gig information.
+
+After the changes are submitted, the frontend sends:
+
+```text
+PUT /api/gigs/:id
+```
+
+The backend only updates the record where both the gig ID and authenticated freelancer ID match.
+
+After a successful update, the My Gigs interface reloads the updated data.
+
+---
+
+## 8.11 Delete Gig Flow
+
+A freelancer can remove an owned gig using the **Delete** button.
+
+The user is asked to confirm the action before the API request is sent.
+
+The frontend sends:
+
+```text
+DELETE /api/gigs/:id
+```
+
+The backend verifies ownership before deleting the gig.
+
+After successful deletion, the gig list automatically refreshes.
+
+---
+
+## 8.12 Member 1 Security Testing
+
+The gig-management functionality was manually tested using multiple freelancer accounts.
+
+The following scenarios were confirmed:
+
+- Freelancer A successfully created a gig.
+- Freelancer A successfully viewed their own gigs.
+- Freelancer A successfully updated their own gig.
+- Freelancer A successfully deleted their own gig.
+- Freelancer B was unable to update Freelancer A's gig.
+- Freelancer B was unable to delete Freelancer A's gig.
+- Freelancer A's gig remained unchanged after Freelancer B's failed requests.
+- Public users were able to view active gigs.
+- Protected gig-management routes required a valid JWT.
+- Invalid or expired authentication tokens were rejected.
+- Gig ownership was enforced by the backend.
+- Gig data persisted in MongoDB.
+
+Example ownership-protection response:
+
+```json
+{
+    "error": "gig not found or access denied"
+}
+```
+
+---
+
+## 8.13 Frontend Functional Testing
+
+The React My Gigs interface was tested through the browser.
+
+The following functionality was confirmed:
+
+- Existing gigs load successfully.
+- Creating a gig immediately adds it to the listings.
+- Editing a gig updates the displayed information.
+- Deleting a gig removes it from the listings.
+- Successful operations display confirmation messages.
+- Unauthenticated access displays an authentication error.
+- The interface correctly communicates with the HTTPS backend API.
+
+---
+
+## 8.14 Running Part 2
+
+### Backend
+
+From the project root:
+
+```bash
+npm install
+node server.js
+```
+
+The backend runs at:
+
+```text
+https://localhost:5000
+```
+
+A locally generated self-signed SSL certificate is used during development.
+
+The health endpoint can be accessed at:
+
+```text
+https://localhost:5000/health
+```
+
+### Frontend
+
+From the project root:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The React frontend runs at:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 8.15 Member 1 Part 2 File Structure
+
+The main files added or updated for the Member 1 contribution are:
+
+```text
+config/db.js
+models/Gig.js
+controllers/gigController.js
+middleware/roleMiddleware.js
+routes/gigRoutes.js
+validators/gigValidation.js
+server.js
+
+frontend/src/api/api.js
+frontend/src/components/GigForm.jsx
+frontend/src/components/GigCard.jsx
+frontend/src/pages/MyGigsPage.jsx
+frontend/src/App.jsx
+frontend/src/index.css
+```
+
+---
+
+## 8.16 Member 1 Part 2 Summary
+
+The Member 1 contribution extends the Part 1 authentication foundation into the marketplace layer of HustleHub+.
+
+The completed contribution includes:
+
+- MongoDB integration
+- Mongoose gig model
+- Freelancer gig CRUD functionality
+- JWT-protected gig-management routes
+- Freelancer role restrictions
+- Backend ownership enforcement
+- Input validation
+- Public gig browsing endpoint
+- React My Gigs management interface
+- Authenticated frontend API requests
+- Create, edit and delete functionality
+- Ownership security testing
+- End-to-end frontend and backend testing
+
+This provides the foundation required for the booking, transaction and income functionality developed by the remaining Part 2 team members.
