@@ -1117,3 +1117,208 @@ a {
     line-height: 1.6;
 }
 
+/* ========================================
+   Client Gig Browsing
+   ======================================== */
+
+.client-feature-card .secondary-button,
+.client-feature-card .primary-button {
+    margin-top: auto;
+    padding: 10px 15px;
+    border: 1px solid #cbd5d1;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.client-feature-card .secondary-button {
+    background: #ffffff;
+    color: var(--brand-navy);
+}
+
+    .client-feature-card .secondary-button:hover:not(:disabled) {
+        background: #f1f6f4;
+        border-color: #a7c6c0;
+    }
+
+.client-feature-card .primary-button {
+    background: var(--brand-teal);
+    border-color: var(--brand-teal);
+    color: #ffffff;
+}
+
+    .client-feature-card .primary-button:hover:not(:disabled) {
+        background: var(--brand-teal-dark);
+        border-color: var(--brand-teal-dark);
+    }
+
+/* Gig details dialog */
+
+.client-dashboard > [role="dialog"] {
+    position: fixed;
+    z-index: 1000;
+    top: 50%;
+    left: 50%;
+    width: min(560px, calc(100% - 32px));
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    min-height: auto;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 30px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 60px rgba(22, 50, 79, 0.2);
+}
+
+    .client-dashboard > [role="dialog"] h2 {
+        margin: 0 0 18px;
+        color: var(--brand-navy);
+    }
+
+    .client-dashboard > [role="dialog"] p {
+        margin: 0 0 14px;
+        color: var(--text-muted);
+        line-height: 1.7;
+    }
+
+    .client-dashboard > [role="dialog"] .gig-actions {
+        margin-top: 24px;
+    }
+
+@media (max-width: 600px) {
+    .client-dashboard > [role="dialog"] {
+        width: calc(100% - 28px);
+        padding: 24px;
+    }
+}
+
+/* ========================================
+   Client Booking Cards
+   ======================================== */
+
+.client-feature-card p {
+    line-height: 1.6;
+}
+
+    .client-feature-card p strong {
+        color: var(--brand-navy);
+    }
+
+.client-feature-card .success-alert {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid #b7d8c8;
+    border-radius: var(--radius-sm);
+    background: #eef8f2;
+    color: #245b42;
+    line-height: 1.6;
+}
+
+.client-feature-card .error-alert {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid #e2b8b8;
+    border-radius: var(--radius-sm);
+    background: #fff3f3;
+    color: #8a3030;
+    line-height: 1.6;
+}
+
+/* ========================================
+   Freelancer Booking Management
+   ======================================== */
+
+.booking-management-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+}
+
+    .booking-management-section .list-heading {
+        margin-bottom: 24px;
+    }
+
+        .booking-management-section .list-heading h2 {
+            margin-bottom: 6px;
+        }
+
+        .booking-management-section .list-heading p {
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+.booking-list {
+    display: grid;
+    gap: 18px;
+}
+
+.booking-card {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.booking-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+    .booking-card-header h3 {
+        margin: 0 0 6px;
+        color: var(--brand-navy);
+    }
+
+    .booking-card-header span:not(.booking-status) {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+.booking-status {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eef8f2;
+    color: #245b42;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.booking-card-details {
+    display: grid;
+    gap: 8px;
+}
+
+    .booking-card-details p {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .booking-card-details strong {
+        color: var(--brand-navy);
+    }
+
+@media (max-width: 600px) {
+    .booking-management-section {
+        padding: 20px;
+    }
+
+    .booking-card-header {
+        flex-direction: column;
+    }
+
+    .booking-status {
+        align-self: flex-start;
+    }
+}

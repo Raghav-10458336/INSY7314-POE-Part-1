@@ -1,4 +1,3 @@
-
 require('dotenv').config()
 
 const fs = require('fs')
@@ -11,6 +10,7 @@ const connectDB = require('./config/db')
 
 const authRoutes = require('./routes/authRoutes')
 const gigRoutes = require('./routes/gigRoutes')
+const bookingRoutes = require('./routes/bookingRoutes')
 const errorHandler = require('./middleware/errorHandler')
 const {
     apiLimiter,
@@ -85,8 +85,7 @@ app.use('/api/auth/register', registerLimiter)
 // Register application routes.
 app.use('/api/auth', authRoutes)
 app.use('/api/gigs', gigRoutes)
-
-// Member 3's booking routes will be registered during integration.
+app.use('/api/bookings', bookingRoutes)
 
 // Handle requests to unknown endpoints.
 app.use((req, res) => {
