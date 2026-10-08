@@ -414,3 +414,304 @@ The collection can be found in:
 
 ```text
 postman/HustleHub_API.postman_collection.json
+```
+
+
+
+
+
+
+---
+
+# Part 2 — Member 2: Authentication & Security
+
+**Team Member:** Raghav Maharaj  
+**Student Number:** ST10458336  
+**Responsibility:** Authentication, role-based access control, API security, input validation and the React authentication interface.
+
+## Member 2.1 Authentication and Account Management
+
+The Part 2 implementation extends the existing authentication foundation by integrating secure user registration and login with the React frontend, Express backend and MongoDB database.
+
+The following authentication features were implemented:
+
+- **User Registration:** The `POST /api/auth/register` endpoint validates account information, normalises email addresses, rejects unexpected request fields and prevents duplicate email registrations.
+- **Password Security:** Passwords are hashed using bcrypt with a cost factor of 10 before being stored in MongoDB. Passwords are not stored in plain text.
+- **User Login:** The `POST /api/auth/login` endpoint verifies user credentials and returns a signed JSON Web Token (JWT) after successful authentication.
+- **JWT Authentication:** JWTs contain the user's identification and role information and expire after one hour.
+- **Protected Requests:** Authenticated API requests include the JWT in the `Authorization: Bearer <token>` header.
+- **Logout:** The React application clears the authentication session and redirects users to the login page.
+- **Session Expiry:** When an authenticated API request receives a `401 Unauthorized` response, the application clears the stored authentication information.
+
+Authentication tokens are stored in browser session storage for the current session. Sensitive configuration values, including the JWT signing secret, are maintained through environment variables rather than being hard-coded.
+
+## Member 2.2 Role-Based Access Control (RBAC)
+
+Role-Based Access Control was implemented to ensure that users can only access functionality appropriate to their assigned role.
+
+Public registration supports two roles:
+
+- **Client:** Can access the client workspace and client-specific functionality.
+- **Freelancer:** Can access the freelancer workspace and manage their own service listings.
+
+Users cannot assign themselves administrator privileges through public registration.
+
+Role restrictions are enforced through backend authentication and authorisation middleware, supported by protected React routes.
+
+| Resource | Client | Freelancer |
+|---|---|---|
+| Registration and login | Allowed | Allowed |
+| Client workspace (`/client`) | Allowed | Denied |
+| Freelancer workspace (`/my-gigs`) | Denied | Allowed |
+| Own gig management | Denied | Allowed |
+| Another freelancer's gig management | Denied | Denied |
+
+Backend ownership checks are used to ensure that freelancers cannot modify service listings belonging to other users.
+
+Frontend route protection improves navigation and user experience, while backend authorisation provides the actual security enforcement.
+
+## Member 2.3 Input Validation and Sanitisation
+
+Server-side input validation was implemented using Express Validator to prevent invalid or unexpected data from reaching application controllers.
+
+Authentication validation includes:
+
+- Required registration and login fields.
+- Valid email address formatting.
+- Password length requirements.
+- Accepted user roles.
+- Email normalisation.
+- Rejection of unexpected registration fields.
+- Appropriate error responses for invalid requests.
+
+Gig validation and sanitisation were also reviewed during security integration.
+
+User-supplied gig information is validated and sanitised before processing. This reduces the risk of malicious input being stored or displayed incorrectly.
+
+Invalid requests are rejected with controlled HTTP responses, typically `400 Bad Request`.
+
+Server-side validation is essential because frontend validation can be bypassed through manually constructed API requests.
+
+## Member 2.4 API and Transport Security
+
+Several security controls were implemented and configured across the Express API and React development environment.
+
+### HTTPS
+
+The backend uses HTTPS for local development.
+
+The default API address is:
+
+`https://localhost:5000`
+
+A self-signed certificate is generated for local development. Production deployment would require a certificate issued by a trusted certificate authority.
+
+HTTPS protects information transmitted between the frontend and backend, including authentication credentials and JWTs.
+
+### Helmet and Content Security Policy
+
+Helmet middleware is used to configure HTTP security headers.
+
+These include:
+
+- Content Security Policy (CSP).
+- `X-Content-Type-Options`.
+- Additional browser security headers.
+
+The React frontend also includes a Content Security Policy configured through Vite.
+
+Development settings accommodate React Refresh, while the preview configuration uses a stricter script policy.
+
+### Cross-Origin Resource Sharing (CORS)
+
+CORS is restricted to explicitly configured frontend origins.
+
+Allowed origins are configured through the `FRONTEND_ORIGINS` environment variable rather than allowing unrestricted browser access from arbitrary origins.
+
+### Rate Limiting
+
+Express rate-limiting middleware protects the API against excessive requests and repeated authentication attempts.
+
+| Limiter | Configured Limit | Purpose |
+|---|---|---|
+| General API | 300 requests per 15 minutes | Reduces excessive API traffic |
+| Login | 10 failed attempts per 15 minutes | Reduces repeated password guessing |
+| Registration | 5 requests per hour | Reduces automated account creation |
+
+These limits help reduce the risk of brute-force attacks, automated abuse and unnecessary server load.
+
+### Centralised Error Handling
+
+A centralised Express error handler provides consistent API responses.
+
+Expected errors return appropriate HTTP status codes and messages, while unexpected internal errors are handled without exposing sensitive implementation details such as stack traces.
+
+## Member 2.5 React Authentication Interface
+
+The React frontend was extended to support the authentication and authorisation functionality.
+
+The following components were implemented or integrated:
+
+- **Login Page:** Allows registered users to authenticate securely.
+- **Registration Page:** Allows new clients and freelancers to create accounts.
+- **Client Dashboard:** Provides a protected workspace for authenticated clients.
+- **Protected Routes:** Restrict navigation according to authentication state and user role.
+- **Authentication Context:** Maintains authentication state throughout the application.
+- **Axios API Client:** Attaches JWTs to authenticated requests and handles expired sessions.
+- **Logout Functionality:** Clears the current authentication session.
+
+The interface includes responsive layouts, validation feedback, loading states and password visibility controls.
+
+## Member 2.6 Main Implementation Files
+
+The following files contain the main authentication and security implementation.
+
+| File | Responsibility |
+|---|---|
+| `controllers/authController.js` | Registration, login, password verification and JWT generation |
+| `models/User.js` | MongoDB user schema, account roles and password protection |
+| `middleware/authMiddleware.js` | JWT verification and role-based authorisation |
+| `middleware/validation.js` | Authentication request validation |
+| `middleware/rateLimiters.js` | General API, login and registration rate limiting |
+| `middleware/errorHandler.js` | Centralised API error handling |
+| `validators/gigValidation.js` | Gig input validation and sanitisation |
+| `server.js` | HTTPS, Helmet, CSP, CORS and Express security configuration |
+| `frontend/src/pages/LoginPage.jsx` | React login interface |
+| `frontend/src/pages/RegisterPage.jsx` | React registration interface |
+| `frontend/src/pages/ClientHomePage.jsx` | Protected client dashboard |
+| `frontend/src/components/ProtectedRoute.jsx` | Authentication and role-based frontend route protection |
+| `frontend/src/context/` | Authentication context and session management |
+| `frontend/src/api/api.js` | Axios configuration, JWT attachment and session-expiry handling |
+| `frontend/src/api/authApi.js` | Authentication API requests |
+| `frontend/vite.config.js` | Vite configuration and frontend security headers |
+
+## Member 2.7 Local Development Setup
+
+The backend runs from the repository root, while the React frontend runs from the `frontend` directory.
+
+### Prerequisites
+
+The following software is required:
+
+- Node.js and npm.
+- MongoDB.
+- A modern web browser.
+- Visual Studio, Visual Studio Code or another suitable development environment.
+- Postman for manual API testing.
+
+### Backend Environment Configuration
+
+Create a `.env` file in the repository root using `.env.example` as a guide.
+
+The backend uses the following environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `PORT` | Backend HTTPS server port |
+| `NODE_ENV` | Application environment |
+| `JWT_SECRET` | Secret used to sign and verify JWTs |
+| `MONGO_URI` | MongoDB connection string |
+| `FRONTEND_ORIGINS` | Permitted frontend origins for CORS |
+
+For local development, MongoDB can use:
+
+`mongodb://127.0.0.1:27017/hustlehub`
+
+Real secrets, environment files and private certificate files must not be committed to Git.
+
+### Frontend Environment Configuration
+
+Create `frontend/.env` using `frontend/.env.example` as a guide.
+
+Configure the backend URL:
+
+```env
+VITE_API_URL=https://localhost:5000
+```
+
+### Starting the Backend
+
+Open a terminal in the repository root and run:
+
+```powershell
+npm.cmd install
+npm.cmd start
+```
+
+The backend runs at:
+
+`https://localhost:5000`
+
+The health endpoint can be used to confirm that the API is running:
+
+`https://localhost:5000/health`
+
+### Starting the Frontend
+
+Open a second terminal and run:
+
+```powershell
+cd frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+The React application runs at:
+
+`http://localhost:5173`
+
+MongoDB must be running before starting the backend.
+
+A browser may display a certificate warning when first accessing the locally generated self-signed HTTPS certificate.
+
+## Member 2.8 Security Verification and Testing
+
+Manual security testing was performed using Postman, the React application and browser developer tools.
+
+The tests focused on authentication, role restrictions, validation, rate limiting and security headers.
+
+| Test Scenario | Observed Result |
+|---|---|
+| Valid account registration | Registration successful |
+| Login with valid credentials | Authentication successful |
+| Access protected client dashboard | Authenticated client granted access |
+| Logout | Session cleared and redirected to `/login` |
+| Freelancer accessing `/client` | Access denied with `403` |
+| `GET /api/gigs/my` without JWT | `401 Unauthorized` |
+| `GET /api/gigs/my` with client JWT | `403 Forbidden` |
+| `GET /api/gigs/my` with freelancer JWT | `200 OK` |
+| Registration with invalid input | `400 Bad Request` |
+| Registration with unexpected `isAdmin` field | `400 Bad Request` |
+| Repeated failed login attempts | `429 Too Many Requests` |
+| Backend security headers | Helmet headers and CSP present |
+| Frontend CSP | CSP present and no remaining CSP console error during verification |
+
+These results demonstrate that authentication and role restrictions are enforced at the API level rather than relying only on frontend navigation.
+
+### Additional Testing Before Final Submission
+
+The following verification activities remain part of the final project testing and integration process:
+
+- Final Postman collection verification.
+- Newman automated API test execution.
+- React automated testing.
+- Integration testing with booking and transaction functionality.
+- Final end-to-end application verification.
+
+The completed manual tests are documented separately from automated tests that have not yet been confirmed.
+
+## Member 2.9 Security Considerations
+
+The implemented security controls provide multiple layers of protection.
+
+Authentication establishes the identity of the user, while authorisation determines which resources the user may access.
+
+Validation and sanitisation reduce the risk of malformed or malicious input.
+
+HTTPS protects information during transmission, while Helmet, CSP, CORS and rate limiting provide additional safeguards.
+
+Centralised error handling prevents unnecessary disclosure of internal server information.
+
+The implementation follows a defence-in-depth approach, where multiple independent controls contribute to the overall security of HustleHub+.
+
+---
