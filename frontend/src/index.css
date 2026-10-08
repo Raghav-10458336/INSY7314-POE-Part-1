@@ -1225,3 +1225,100 @@ a {
     color: #8a3030;
     line-height: 1.6;
 }
+
+/* ========================================
+   Freelancer Booking Management
+   ======================================== */
+
+.booking-management-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+}
+
+    .booking-management-section .list-heading {
+        margin-bottom: 24px;
+    }
+
+        .booking-management-section .list-heading h2 {
+            margin-bottom: 6px;
+        }
+
+        .booking-management-section .list-heading p {
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+.booking-list {
+    display: grid;
+    gap: 18px;
+}
+
+.booking-card {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.booking-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+    .booking-card-header h3 {
+        margin: 0 0 6px;
+        color: var(--brand-navy);
+    }
+
+    .booking-card-header span:not(.booking-status) {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+.booking-status {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eef8f2;
+    color: #245b42;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.booking-card-details {
+    display: grid;
+    gap: 8px;
+}
+
+    .booking-card-details p {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .booking-card-details strong {
+        color: var(--brand-navy);
+    }
+
+@media (max-width: 600px) {
+    .booking-management-section {
+        padding: 20px;
+    }
+
+    .booking-card-header {
+        flex-direction: column;
+    }
+
+    .booking-status {
+        align-self: flex-start;
+    }
+}

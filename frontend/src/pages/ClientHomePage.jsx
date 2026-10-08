@@ -126,10 +126,11 @@ export default function ClientHomePage() {
 
             setBookingSuccess(response)
 
-            setBookings(currentBookings => [
-                response.booking,
-                ...currentBookings
-            ])
+            // Reload bookings so the new booking contains
+            // the populated gig and transaction details.
+            const bookingsResponse = await getMyBookings()
+
+            setBookings(bookingsResponse.bookings ?? [])
         } catch (error) {
             setBookingError(
                 error.response?.data?.error ||
@@ -410,6 +411,20 @@ export default function ClientHomePage() {
                                         <p>
                                             <strong>Status:</strong>{' '}
                                             {bookingItem.status}
+                                        </p>
+
+                                        <p>
+                                            <strong>Transaction ID:</strong>{' '}
+                                            {bookingItem.transactionId ||
+                                                'Unavailable'}
+                                        </p>
+
+                                        <p>
+                                            <strong>
+                                                Transaction Status:
+                                            </strong>{' '}
+                                            {bookingItem.transactionStatus ||
+                                                'Unavailable'}
                                         </p>
 
                                         <p>
