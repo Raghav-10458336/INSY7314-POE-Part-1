@@ -1,9 +1,15 @@
+
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/useAuth'
 import api from '../api/api'
 import GigForm from '../components/GigForm'
 import GigCard from '../components/GigCard'
 
 function MyGigsPage() {
+    const navigate = useNavigate()
+    const { logout } = useAuth()
+
     const [gigs, setGigs] = useState([])
     const [selectedGig, setSelectedGig] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -11,9 +17,17 @@ function MyGigsPage() {
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
 
+    // End the current session and return to login.
+    function handleLogout() {
+        logout()
+        navigate('/login', { replace: true })
+    }
+
+    // Retrieve gigs belonging to the authenticated freelancer.
     async function loadGigs() {
         try {
             setError('')
+
             const response = await api.get('/gigs/my')
             setGigs(response.data.gigs || [])
         } catch (err) {
@@ -32,10 +46,17 @@ function MyGigsPage() {
         }
     }
 
+    // Load gigs when the page opens.
     useEffect(() => {
-        loadGigs()
+        // Defer the request to avoid synchronous state updates in the effect.
+        const timeoutId = setTimeout(() => {
+            loadGigs()
+        }, 0)
+
+        return () => clearTimeout(timeoutId)
     }, [])
 
+    // Create a new gig or update an existing listing.
     async function saveGig(form) {
         try {
             setBusy(true)
@@ -70,6 +91,7 @@ function MyGigsPage() {
         }
     }
 
+    // Delete a gig after confirmation.
     async function deleteGig(gig) {
         const confirmed = window.confirm(
             `Delete "${gig.title}"?`
@@ -110,6 +132,14 @@ function MyGigsPage() {
                 <p>
                     Create and manage the services you offer to clients.
                 </p>
+
+                {/* Logout functionality for authenticated freelancers. */}
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                >
+                    Log Out
+                </button>
             </header>
 
             {message && (
