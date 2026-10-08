@@ -1,88 +1,90 @@
-const fs = require('fs')
-const path = require('path')
+
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const User = require('../models/User')
 const { ApiError } = require('../middleware/errorHandler')
 
-const usersFilePath = path.join(__dirname, '..', 'data', 'users.json')
-
-function readUsers() {
-    const data = fs.readFileSync(usersFilePath, 'utf8')
-    return JSON.parse(data)
-}
-
-function saveUsers(users) {
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2))
-}
-
+// Register a new user and securely store their details in MongoDB.
 async function register(req, res, next) {
     try {
         const { name, email, password, role } = req.body
 
-        const users = readUsers()
+        const normalizedEmail = email.trim().toLowerCase()
 
-        const existingUser = users.find(
-            user => user.email.toLowerCase() === email.toLowerCase()
-        )
+        // Prevent duplicate account registration.
+        const existingUser = await User.findOne({
+            email: normalizedEmail
+        })
 
         if (existingUser) {
             throw new ApiError(400, 'email already registered')
         }
 
+        // Hash the password before storing it.
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const newUser = {
-            id: Date.now().toString(),
+        const newUser = await User.create({
             name,
-            email,
+            email: normalizedEmail,
             password: hashedPassword,
             role
-        }
+        })
 
-        users.push(newUser)
-        saveUsers(users)
-
+        // Return only safe account details.
         res.status(201).json({
             message: 'user registered successfully',
             user: {
-                id: newUser.id,
+                id: newUser._id.toString(),
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role
             }
         })
     } catch (err) {
+        // Handle duplicate emails caused by concurrent registrations.
+        if (err.code === 11000) {
+            return next(new ApiError(400, 'email already registered'))
+        }
+
         next(err)
     }
 }
 
+// Authenticate a user and generate a signed JWT.
 async function login(req, res, next) {
     try {
         const { email, password } = req.body
 
-        const users = readUsers()
+        const normalizedEmail = email.trim().toLowerCase()
 
-        const user = users.find(
-            user => user.email.toLowerCase() === email.toLowerCase()
-        )
+        // Explicitly retrieve the stored password hash.
+        const user = await User.findOne({
+            email: normalizedEmail
+        }).select('+password')
 
+        // Use the same response for unknown emails and incorrect passwords.
         if (!user) {
             throw new ApiError(401, 'invalid email or password')
         }
 
-        const passwordMatches = await bcrypt.compare(password, user.password)
+        const passwordMatches = await bcrypt.compare(
+            password,
+            user.password
+        )
 
         if (!passwordMatches) {
             throw new ApiError(401, 'invalid email or password')
         }
 
+        // Sign the token using the approved algorithm and expiry.
         const token = jwt.sign(
             {
-                id: user.id,
+                id: user._id.toString(),
                 role: user.role
             },
             process.env.JWT_SECRET,
             {
+                algorithm: 'HS256',
                 expiresIn: '1h'
             }
         )
@@ -100,5 +102,3 @@ module.exports = {
     register,
     login
 }
-
-
