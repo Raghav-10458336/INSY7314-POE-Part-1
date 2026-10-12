@@ -116,7 +116,7 @@ npm test -- --reporter=verbose > reports\vitest-verbose.txt
 
 Save these in `screenshots/` and keep the `.env` file out of every shot.
 
-- `01-register.png` registration form for a freelancer
+- `01-register.png` registration form completed
 - `02-login-error.png` login with an error message
 - `03-create-gig.png` freelancer creating a gig
 - `04-my-gigs.png` freelancer gig list
@@ -127,6 +127,12 @@ Save these in `screenshots/` and keep the `.env` file out of every shot.
 - `09-income.png` income page
 - `10-validation-error.png` invalid input handled on a form
 - `11-access-denied.png` freelancer opening the client page
+- `14-github-commits.png` GitHub repository with commits and contributors
+- `15-readme-part2.png` README Part 2 overview and endpoint table
+- `16-mongodb-transaction.png` transaction records in MongoDB
+- `17-login-page.png` sign in page
+- `18-register-page.png` registration page
+- `19-account-created.png` account created confirmation
 - `20-newman-run.png` Newman summary table
 - `21-newman-rate-limits.png` Newman rate limit folder
 - `22-frontend-tests.png` Vitest summary
