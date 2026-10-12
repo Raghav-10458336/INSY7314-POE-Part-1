@@ -3521,6 +3521,225 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "06 Rate limits",
+      "item": [
+        {
+          "name": "Repeated bookings hit the limit (429)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const options = {",
+                  "    url: pm.variables.get('baseUrl') + '/api/bookings',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + pm.collectionVariables.get('clientToken') },",
+                  "    body: { mode: 'raw', raw: JSON.stringify({ gigId: pm.collectionVariables.get('gigId') }) }",
+                  "}",
+                  "let remaining = 12",
+                  "function fire() {",
+                  "    if (remaining === 0) {",
+                  "        return",
+                  "    }",
+                  "    remaining -= 1",
+                  "    pm.sendRequest(options, fire)",
+                  "}",
+                  "fire()"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 429', function () {",
+                  "    pm.response.to.have.status(429)",
+                  "})",
+                  "pm.test('The message says to wait', function () {",
+                  "    pm.expect(body.error).to.include('Too many booking attempts')",
+                  "})",
+                  "pm.test('Retry-After tells the client how long', function () {",
+                  "    pm.expect(pm.response.headers.has('Retry-After')).to.eql(true)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{gigId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Repeated failed logins hit the limit (429)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const options = {",
+                  "    url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: { mode: 'raw', raw: JSON.stringify({ email: pm.collectionVariables.get('freelancerAEmail'), password: 'not-the-password-1' }) }",
+                  "}",
+                  "let remaining = 12",
+                  "function fire() {",
+                  "    if (remaining === 0) {",
+                  "        return",
+                  "    }",
+                  "    remaining -= 1",
+                  "    pm.sendRequest(options, fire)",
+                  "}",
+                  "fire()"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 429', function () {",
+                  "    pm.response.to.have.status(429)",
+                  "})",
+                  "pm.test('The message says to wait', function () {",
+                  "    pm.expect(body.error).to.include('Too many login attempts')",
+                  "})",
+                  "pm.test('Retry-After tells the client how long', function () {",
+                  "    pm.expect(pm.response.headers.has('Retry-After')).to.eql(true)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{freelancerAEmail}}\",\n  \"password\": \"not-the-password-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registrations past the hourly limit are blocked (429)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 429', function () {",
+                  "    pm.response.to.have.status(429)",
+                  "})",
+                  "pm.test('The message says to try later', function () {",
+                  "    pm.expect(body.error).to.include('Too many registration attempts')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Late Comer\",\n  \"email\": \"late.{{runId}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"client\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
