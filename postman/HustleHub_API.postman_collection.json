@@ -2029,6 +2029,725 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "03 Bookings",
+      "item": [
+        {
+          "name": "Client books the first gig (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Booking uses the gig price and the right people', function () {",
+                  "    pm.expect(body.booking.amount).to.eql(250)",
+                  "    pm.expect(body.booking.status).to.eql('confirmed')",
+                  "    pm.expect(body.booking.client).to.eql(pm.collectionVariables.get('clientId'))",
+                  "    pm.expect(body.booking.freelancer).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "})",
+                  "pm.test('A confirmed transaction is created for the booking', function () {",
+                  "    pm.expect(body.transaction.booking).to.eql(body.booking._id)",
+                  "    pm.expect(body.transaction.amount).to.eql(250)",
+                  "    pm.expect(body.transaction.status).to.eql('confirmed')",
+                  "    pm.expect(body.transaction.client).to.eql(pm.collectionVariables.get('clientId'))",
+                  "    pm.expect(body.transaction.freelancer).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "})",
+                  "if (body.booking) {",
+                  "    pm.collectionVariables.set('bookingId', body.booking._id)",
+                  "    pm.collectionVariables.set('transactionId', body.transaction._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{gigId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client books the second gig (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Amount is 120.5 and a transaction exists', function () {",
+                  "    pm.expect(body.booking.amount).to.eql(120.5)",
+                  "    pm.expect(body.transaction.amount).to.eql(120.5)",
+                  "})",
+                  "if (body.booking) {",
+                  "    pm.collectionVariables.set('bookingId2', body.booking._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{gigId2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Price in the request body is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{gigId}}\",\n  \"amount\": 1,\n  \"freelancer\": \"{{freelancerBId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed gig id is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unknown gig cannot be booked (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"64b64b64b64b64b64b64b64b\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Inactive gig cannot be booked (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{hiddenGigId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer cannot book a gig (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})",
+                  "pm.test('Error message is \"forbidden\"', function () {",
+                  "    pm.expect(body.error).to.eql('forbidden')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerBToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{gigId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Booking without a token is rejected (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gigId\": \"{{gigId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client sees their bookings with transactions (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Both bookings are listed', function () {",
+                  "    pm.expect(body.count).to.eql(2)",
+                  "    const ids = body.bookings.map(function (b) { return b._id })",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('bookingId'))",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('bookingId2'))",
+                  "})",
+                  "pm.test('Every booking points at a confirmed transaction', function () {",
+                  "    body.bookings.forEach(function (b) {",
+                  "        pm.expect(b.transactionId).to.be.a('string')",
+                  "        pm.expect(b.transactionStatus).to.eql('confirmed')",
+                  "    })",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "my"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A sees bookings for their gigs (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Both bookings belong to freelancer A', function () {",
+                  "    pm.expect(body.count).to.eql(2)",
+                  "    body.bookings.forEach(function (b) {",
+                  "        pm.expect(b.freelancer).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "    })",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/freelancer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "freelancer"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer B sees none of those bookings (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('No bookings leak to another freelancer', function () {",
+                  "    pm.expect(body.count).to.eql(0)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/freelancer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "freelancer"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client cannot read the freelancer booking list (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/freelancer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "freelancer"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer cannot read the client booking list (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "my"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
