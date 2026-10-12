@@ -5,34 +5,38 @@ const {
     checkExact
 } = require('express-validator')
 
+// markup is removed instead of escaped because React already encodes text when it is shown
+const removeMarkup = value =>
+    value
+        .replace(/<[^>]*>/g, '')
+        .replace(/[<>]/g, '')
+        .trim()
+
 // Validate and sanitise gig details before database operations.
 const gigValidationRules = [
     body('title')
         .isString().withMessage('title must be text')
         .bail()
         .trim()
+        .customSanitizer(removeMarkup)
         .isLength({ min: 3, max: 80 })
-        .withMessage('title must be between 3 and 80 characters')
-        .bail()
-        .escape(),
+        .withMessage('title must be between 3 and 80 characters'),
 
     body('description')
         .isString().withMessage('description must be text')
         .bail()
         .trim()
+        .customSanitizer(removeMarkup)
         .isLength({ min: 10, max: 1000 })
-        .withMessage('description must be between 10 and 1000 characters')
-        .bail()
-        .escape(),
+        .withMessage('description must be between 10 and 1000 characters'),
 
     body('category')
         .isString().withMessage('category must be text')
         .bail()
         .trim()
+        .customSanitizer(removeMarkup)
         .isLength({ min: 2, max: 50 })
-        .withMessage('category must be between 2 and 50 characters')
-        .bail()
-        .escape(),
+        .withMessage('category must be between 2 and 50 characters'),
 
     body('price')
         .isFloat({ min: 0 })
