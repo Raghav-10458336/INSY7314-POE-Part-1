@@ -843,6 +843,76 @@ The implementation follows a defence-in-depth approach, where multiple independe
 
 ---
 
+# Part 2 - Member 3: Bookings and Transactions
+
+**Team Member:** Shahaan Pillay  
+**Student Number:** ST10438099  
+**Responsibility:** Client gig browsing, booking creation, transaction records and the React booking interface.
+
+## Member 3.1 Browsing Gigs
+
+Clients browse the active gigs offered by freelancers on the client dashboard. Each gig shows its title, description, category, price and delivery time, and the **View Details** button opens the details of the gig.
+
+The list is loaded from the public `GET /api/gigs` endpoint, which only returns active gigs.
+
+## Member 3.2 Bookings
+
+A client books a gig with `POST /api/bookings`.
+
+| Request | Response |
+|---|---|
+| Client with a valid JWT and an active gig | `201 Created` with the booking and its transaction |
+| Freelancer with a valid JWT | `403 Forbidden` |
+| Missing, invalid or expired JWT | `401 Unauthorized` |
+| Unknown or inactive gig | `404 Not Found` |
+| Invalid gig identifier or extra fields | `400 Bad Request` |
+
+The following rules are applied:
+
+- **Server-side pricing:** The request only contains the gig identifier. The amount comes from the gig, so a client cannot choose the price.
+- **Trusted parties:** The client comes from the JWT and the freelancer comes from the gig.
+- **Simulated confirmation:** No payment is taken and the booking is confirmed immediately.
+- **Rate limiting:** Booking requests are limited to 10 every 15 minutes, as described in Member 2.4.
+
+## Member 3.3 Transactions
+
+A transaction record is created automatically for every booking. It stores the booking, the gig, the client, the freelancer, the amount and a status.
+
+Each booking can only have one transaction. If the transaction cannot be created, the booking is removed again so that a booking never exists without its transaction.
+
+The transaction links the booking to the correct client and freelancer, and it is the source of the income described in Member 4.1.
+
+## Member 3.4 Viewing Bookings
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `GET /api/bookings/my` | Client | Lists the client's own bookings |
+| `GET /api/bookings/freelancer` | Freelancer | Lists the bookings made for the freelancer's gigs |
+
+Each booking includes the gig details and the identifier and status of its transaction. Clients and freelancers only see their own bookings, and a user with the wrong role receives `403 Forbidden`.
+
+## Member 3.5 React Booking Interface
+
+- **Client dashboard:** Clients browse gigs, open the details of a gig and book it with the **Book This Gig** button.
+- **Confirmation:** After a booking, the booking and transaction identifiers are shown and the booking list is refreshed.
+- **Errors:** Messages from the API, for example when the booking limit has been reached, are displayed.
+- **My Bookings:** Clients see their bookings with the amount, delivery time, booking date and transaction status.
+- **Client Bookings:** Freelancers see the bookings made for their gigs on the My Gigs page, together with the transaction details.
+
+## Member 3.6 Main Implementation Files
+
+| File | Responsibility |
+|---|---|
+| `models/Booking.js` | Booking schema |
+| `models/Transaction.js` | Transaction schema |
+| `controllers/bookingController.js` | Booking creation, transaction creation and booking lists |
+| `routes/bookingRoutes.js` | Booking routes with authentication, role checks and rate limiting |
+| `validators/bookingValidation.js` | Booking request validation |
+| `frontend/src/pages/ClientHomePage.jsx` | Client dashboard, booking dialog and My Bookings |
+| `frontend/src/api/bookingApi.js` | Booking API requests |
+
+---
+
 # Part 2 - Member 4: Income Tracking, Testing and Demonstration
 
 **Team Member:** Ophec Funis  
