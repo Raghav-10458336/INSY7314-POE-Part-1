@@ -49,7 +49,7 @@ A Client is expected to use the platform to:
 - Log into the platform.
 - Browse available freelance services.
 - View relevant gig information.
-- Initiate bookings in later versions of the system.
+- Book gigs and view their bookings.
 
 Client actions are restricted according to the permissions assigned to the Client role.
 
@@ -65,7 +65,7 @@ A Freelancer is expected to use the platform to:
 - Log into the platform.
 - Create and manage service listings.
 - View bookings associated with their services.
-- Track income generated through bookings in later versions.
+- Track income generated through bookings.
 - View estimated tax information in the completed system.
 
 Freelancer functionality is protected so that users cannot access or modify resources belonging to other users.
@@ -77,6 +77,8 @@ Freelancer functionality is protected so that users cannot access or modify reso
 Administrators are users responsible for privileged system-level functionality.
 
 The Administrator role exists separately from the Client and Freelancer roles so that administrative functionality can be restricted to authorised users.
+
+In the current Part 2 implementation, public registration only creates Client and Freelancer accounts. Administrator functionality has not been built yet and is planned for a later stage of the project.
 
 Administrative permissions are enforced through role-based access control rather than relying on the frontend to hide functionality. This ensures that a user cannot gain access to administrative functionality simply by manually constructing an API request.
 
@@ -306,6 +308,8 @@ HustleHub+ includes a Postman collection that tests the authentication API and v
 
 The testing collection covers both successful and unsuccessful requests.
 
+The scenarios below are the authentication tests created in Part 1. In Part 2 the collection was expanded to cover gigs, bookings, income, security and rate limiting, and the expanded collection is described in Member 4.2.
+
 The following scenarios are tested:
 
 1. API health check
@@ -416,10 +420,139 @@ The collection can be found in:
 postman/HustleHub_API.postman_collection.json
 ```
 
+In Part 2 the collection contains 72 requests and is run with Newman. The details are in Member 4.2.
 
 
 
 
+
+
+---
+
+# Part 2 - Overview
+
+The Part 2 implementation extends the secure backend from Part 1 into a full-stack MERN application. Freelancers publish gigs, clients browse and book them, every booking creates a transaction, and freelancers can track the income they earn from their bookings.
+
+The application provides the following features:
+
+- **Accounts:** Registration and login for clients and freelancers, with JWT authentication.
+- **Gig management:** Freelancers create, view, update and delete their own gigs.
+- **Browsing:** Clients browse the active gigs offered by freelancers.
+- **Bookings:** Clients book a gig and receive a simulated confirmation. No real payment is taken.
+- **Transactions:** A transaction record is created automatically for every booking and linked to the client and the freelancer.
+- **Income tracking:** Freelancers see the income they earn from their confirmed transactions.
+- **Security:** HTTPS, role-based access control, input validation and sanitisation, rate limiting, security headers with a Content Security Policy, restricted CORS and controlled error responses.
+- **Testing:** Postman and Newman API tests and Vitest frontend tests.
+
+The work was divided between four members. Each of the following sections describes one member's contribution.
+
+| Section | Responsibility |
+|---|---|
+| Member 1 | MongoDB setup and gig management |
+| Member 2 | Authentication, role-based access control and security |
+| Member 3 | Browsing, bookings and transactions |
+| Member 4 | Income tracking, testing and demonstration |
+
+## Technology and Data Models
+
+The backend uses Node.js, Express and MongoDB with Mongoose. The frontend uses React with Vite.
+
+| Model | Main fields |
+|---|---|
+| User | Name, email, hashed password and role (client or freelancer) |
+| Gig | Title, description, category, price, delivery days, freelancer and active status |
+| Booking | Gig, client, freelancer, amount and status |
+| Transaction | Booking, gig, client, freelancer, amount and status |
+
+## API Endpoints
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `GET /health` | Public | Health check |
+| `POST /api/auth/register` | Public | Creates a client or freelancer account |
+| `POST /api/auth/login` | Public | Logs in and returns a JWT |
+| `GET /api/auth/me` | Any signed-in user | Returns the authenticated user |
+| `GET /api/gigs` | Public | Lists active gigs |
+| `GET /api/gigs/my` | Freelancer | Lists the freelancer's own gigs |
+| `POST /api/gigs` | Freelancer | Creates a gig |
+| `PUT /api/gigs/:id` | Freelancer who owns the gig | Updates a gig |
+| `DELETE /api/gigs/:id` | Freelancer who owns the gig | Deletes a gig |
+| `POST /api/bookings` | Client | Books a gig and creates its transaction |
+| `GET /api/bookings/my` | Client | Lists the client's bookings |
+| `GET /api/bookings/freelancer` | Freelancer | Lists the bookings made for the freelancer's gigs |
+| `GET /api/income` | Freelancer | Returns income from confirmed transactions |
+
+---
+
+# Part 2 - Member 1: Project Setup and Gig Management
+
+**Team Member:** Rahil Ramdass  
+**Student Number:** ST10434494  
+**Responsibility:** Part 2 project setup, MongoDB integration, gig management and the React gig management interface.
+
+## Member 1.1 Project Setup and MongoDB
+
+The Part 2 project was built on top of the completed Part 1 backend, and a React frontend was added in the `frontend` directory using Vite.
+
+MongoDB is used to store the application data. The database connection is created in `config/db.js` using Mongoose and the `MONGO_URI` environment variable. The HTTPS server only starts after the database connection has succeeded, so the API is not available without its database.
+
+The project dependencies were reviewed and updated at the start of Part 2, including the removal of a reported audit vulnerability.
+
+## Member 1.2 Gig Management API
+
+Freelancers can create, view, update and delete their own gigs.
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `GET /api/gigs` | Public | Lists active gigs, newest first |
+| `GET /api/gigs/my` | Freelancer | Lists all of the freelancer's own gigs, including inactive gigs |
+| `POST /api/gigs` | Freelancer | Creates a gig |
+| `PUT /api/gigs/:id` | Freelancer who owns the gig | Updates a gig |
+| `DELETE /api/gigs/:id` | Freelancer who owns the gig | Deletes a gig |
+
+Ownership is enforced in the database query. When a gig is updated or deleted, the query matches both the gig identifier and the identifier of the authenticated freelancer taken from the JWT. A freelancer who tries to change another freelancer's gig receives `404 Not Found`, which also avoids confirming that the gig exists.
+
+The owner of a gig is always taken from the JWT, so a request cannot assign a gig to another user.
+
+An inactive gig is hidden from clients but remains visible to its owner.
+
+## Member 1.3 Gig Validation
+
+Gig details are validated on the server before they are stored.
+
+| Field | Rule |
+|---|---|
+| `title` | Text between 3 and 80 characters |
+| `description` | Text between 10 and 1000 characters |
+| `category` | Text between 2 and 50 characters |
+| `price` | A number that is 0 or more |
+| `deliveryDays` | A whole number from 1 to 365 |
+| `active` | Optional true or false |
+
+Requests that contain any other field are rejected with `400 Bad Request`. Markup is removed from the text fields before they are stored, as described in Member 2.3.
+
+## Member 1.4 React Gig Management Interface
+
+The My Gigs page allows freelancers to manage their listings.
+
+- **Create and edit:** A single form creates a new gig or edits the selected gig.
+- **Listings:** Each gig is shown with its category, price, delivery time and active status.
+- **Delete:** A gig is only deleted after the freelancer confirms.
+- **Feedback:** Success messages and the validation messages returned by the API are displayed, together with loading and empty states.
+- **Access:** The page is only available to freelancers.
+
+## Member 1.5 Main Implementation Files
+
+| File | Responsibility |
+|---|---|
+| `config/db.js` | MongoDB connection |
+| `models/Gig.js` | Gig schema |
+| `controllers/gigController.js` | Gig listing, creation, update and deletion with ownership checks |
+| `routes/gigRoutes.js` | Gig routes with authentication and role checks |
+| `validators/gigValidation.js` | Gig validation and sanitisation |
+| `frontend/src/pages/MyGigsPage.jsx` | Freelancer gig management page |
+| `frontend/src/components/GigForm.jsx` | Gig create and edit form |
+| `frontend/src/components/GigCard.jsx` | Gig listing card |
 
 ---
 
@@ -688,17 +821,11 @@ The tests focused on authentication, role restrictions, validation, rate limitin
 
 These results demonstrate that authentication and role restrictions are enforced at the API level rather than relying only on frontend navigation.
 
-### Additional Testing Before Final Submission
+### Automated Testing
 
-The following verification activities remain part of the final project testing and integration process:
+Automated API testing with Newman and automated React testing are documented in Member 4.2 and Member 4.3. Integration testing with booking, transaction and income functionality is covered by the Postman collection described in Member 4.2.
 
-- Final Postman collection verification.
-- Newman automated API test execution.
-- React automated testing.
-- Integration testing with booking and transaction functionality.
-- Final end-to-end application verification.
-
-The completed manual tests are documented separately from automated tests that have not yet been confirmed.
+The manual tests in the table above were performed during development. The automated tests repeat the main role, validation, rate limiting and security header scenarios.
 
 ## Member 2.9 Security Considerations
 
@@ -716,6 +843,76 @@ The implementation follows a defence-in-depth approach, where multiple independe
 
 ---
 
+# Part 2 - Member 3: Bookings and Transactions
+
+**Team Member:** Shahaan Pillay  
+**Student Number:** ST10438099  
+**Responsibility:** Client gig browsing, booking creation, transaction records and the React booking interface.
+
+## Member 3.1 Browsing Gigs
+
+Clients browse the active gigs offered by freelancers on the client dashboard. Each gig shows its title, description, category, price and delivery time, and the **View Details** button opens the details of the gig.
+
+The list is loaded from the public `GET /api/gigs` endpoint, which only returns active gigs.
+
+## Member 3.2 Bookings
+
+A client books a gig with `POST /api/bookings`.
+
+| Request | Response |
+|---|---|
+| Client with a valid JWT and an active gig | `201 Created` with the booking and its transaction |
+| Freelancer with a valid JWT | `403 Forbidden` |
+| Missing, invalid or expired JWT | `401 Unauthorized` |
+| Unknown or inactive gig | `404 Not Found` |
+| Invalid gig identifier or extra fields | `400 Bad Request` |
+
+The following rules are applied:
+
+- **Server-side pricing:** The request only contains the gig identifier. The amount comes from the gig, so a client cannot choose the price.
+- **Trusted parties:** The client comes from the JWT and the freelancer comes from the gig.
+- **Simulated confirmation:** No payment is taken and the booking is confirmed immediately.
+- **Rate limiting:** Booking requests are limited to 10 every 15 minutes, as described in Member 2.4.
+
+## Member 3.3 Transactions
+
+A transaction record is created automatically for every booking. It stores the booking, the gig, the client, the freelancer, the amount and a status.
+
+Each booking can only have one transaction. If the transaction cannot be created, the booking is removed again so that a booking never exists without its transaction.
+
+The transaction links the booking to the correct client and freelancer, and it is the source of the income described in Member 4.1.
+
+## Member 3.4 Viewing Bookings
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `GET /api/bookings/my` | Client | Lists the client's own bookings |
+| `GET /api/bookings/freelancer` | Freelancer | Lists the bookings made for the freelancer's gigs |
+
+Each booking includes the gig details and the identifier and status of its transaction. Clients and freelancers only see their own bookings, and a user with the wrong role receives `403 Forbidden`.
+
+## Member 3.5 React Booking Interface
+
+- **Client dashboard:** Clients browse gigs, open the details of a gig and book it with the **Book This Gig** button.
+- **Confirmation:** After a booking, the booking and transaction identifiers are shown and the booking list is refreshed.
+- **Errors:** Messages from the API, for example when the booking limit has been reached, are displayed.
+- **My Bookings:** Clients see their bookings with the amount, delivery time, booking date and transaction status.
+- **Client Bookings:** Freelancers see the bookings made for their gigs on the My Gigs page, together with the transaction details.
+
+## Member 3.6 Main Implementation Files
+
+| File | Responsibility |
+|---|---|
+| `models/Booking.js` | Booking schema |
+| `models/Transaction.js` | Transaction schema |
+| `controllers/bookingController.js` | Booking creation, transaction creation and booking lists |
+| `routes/bookingRoutes.js` | Booking routes with authentication, role checks and rate limiting |
+| `validators/bookingValidation.js` | Booking request validation |
+| `frontend/src/pages/ClientHomePage.jsx` | Client dashboard, booking dialog and My Bookings |
+| `frontend/src/api/bookingApi.js` | Booking API requests |
+
+---
+
 # Part 2 - Member 4: Income Tracking, Testing and Demonstration
 
 **Team Member:** Ophec Funis  
@@ -724,7 +921,7 @@ The implementation follows a defence-in-depth approach, where multiple independe
 
 ## Member 4.1 Income Tracking
 
-The Part 2 implementation adds income tracking so that freelancers can see the money generated by their bookings.
+The Part 2 implementation adds income tracking so that freelancers can see the money they earn from their bookings.
 
 Every confirmed booking already creates a transaction record. Income is therefore calculated from those transaction records rather than being stored separately. This ensures that the income shown to a freelancer always matches their bookings.
 
@@ -779,13 +976,13 @@ The page includes loading, empty and error states. The route is protected so tha
 
 The Part 1 Postman collection was expanded to cover the complete Part 2 API.
 
-The collection contains 70 requests grouped into seven folders. It covers both successful and unsuccessful requests. For example, the tests confirm that a client cannot create a gig and that one freelancer cannot change another freelancer's gig.
+The collection contains 72 requests grouped into seven folders. It covers both successful and unsuccessful requests. For example, the tests confirm that a client cannot create a gig and that one freelancer cannot change another freelancer's gig.
 
 | Folder | Coverage |
 |---|---|
 | 00 Setup | Health check and the data used for the test run |
 | 01 Auth | Registration, duplicate email, refused administrator role, login, token contents, incorrect password, validation and invalid tokens |
-| 02 Gigs | Creating, updating and deleting gigs, validation, role checks, ownership and inactive gigs |
+| 02 Gigs | Creating, updating and deleting gigs, validation, role checks, ownership, inactive gigs and text stored as typed |
 | 03 Bookings | Booking and transaction creation, server-side pricing, role checks and separation between users |
 | 04 Income | Income totals, role checks, separation between freelancers and income after a gig is deleted |
 | 05 Security | Security headers, CORS, malformed and oversized requests, operator injection and script content in a gig |

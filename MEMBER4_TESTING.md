@@ -42,7 +42,7 @@ The collection is `postman/HustleHub_API.postman_collection.json`.
 |---|---|---|
 | 00 Setup | 1 | health check, creates the unique emails for the run |
 | 01 Auth | 16 | register, duplicate email, admin role refused, login, token contents, wrong password, validation, protected route with bad tokens |
-| 02 Gigs | 21 | create, update, delete, validation, role checks, other freelancers cannot touch a gig, inactive gigs hidden |
+| 02 Gigs | 23 | create, update, delete, validation, role checks, other freelancers cannot touch a gig, inactive gigs hidden, text such as & ' " and / stored as typed |
 | 03 Bookings | 13 | booking creates a transaction, price cannot be set by the client, role checks, each side only sees its own bookings |
 | 04 Income | 7 | totals match the bookings, other freelancers and clients are blocked, income kept after a gig is deleted |
 | 05 Security | 9 | security headers, CORS, malformed JSON, oversized body, operator injection, script in a gig |
