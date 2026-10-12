@@ -478,6 +478,78 @@ The backend uses Node.js, Express and MongoDB with Mongoose. The frontend uses R
 
 ---
 
+# Part 2 - Member 1: Project Setup and Gig Management
+
+**Team Member:** Rahil Ramdass  
+**Student Number:** ST10434494  
+**Responsibility:** Part 2 project setup, MongoDB integration, gig management and the React gig management interface.
+
+## Member 1.1 Project Setup and MongoDB
+
+The Part 2 project was built on top of the completed Part 1 backend, and a React frontend was added in the `frontend` directory using Vite.
+
+MongoDB is used to store the application data. The database connection is created in `config/db.js` using Mongoose and the `MONGO_URI` environment variable. The HTTPS server only starts after the database connection has succeeded, so the API is not available without its database.
+
+The project dependencies were reviewed and updated at the start of Part 2, including the removal of a reported audit vulnerability.
+
+## Member 1.2 Gig Management API
+
+Freelancers can create, view, update and delete their own gigs.
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `GET /api/gigs` | Public | Lists active gigs, newest first |
+| `GET /api/gigs/my` | Freelancer | Lists all of the freelancer's own gigs, including inactive gigs |
+| `POST /api/gigs` | Freelancer | Creates a gig |
+| `PUT /api/gigs/:id` | Freelancer who owns the gig | Updates a gig |
+| `DELETE /api/gigs/:id` | Freelancer who owns the gig | Deletes a gig |
+
+Ownership is enforced in the database query. When a gig is updated or deleted, the query matches both the gig identifier and the identifier of the authenticated freelancer taken from the JWT. A freelancer who tries to change another freelancer's gig receives `404 Not Found`, which also avoids confirming that the gig exists.
+
+The owner of a gig is always taken from the JWT, so a request cannot assign a gig to another user.
+
+An inactive gig is hidden from clients but remains visible to its owner.
+
+## Member 1.3 Gig Validation
+
+Gig details are validated on the server before they are stored.
+
+| Field | Rule |
+|---|---|
+| `title` | Text between 3 and 80 characters |
+| `description` | Text between 10 and 1000 characters |
+| `category` | Text between 2 and 50 characters |
+| `price` | A number that is 0 or more |
+| `deliveryDays` | A whole number from 1 to 365 |
+| `active` | Optional true or false |
+
+Requests that contain any other field are rejected with `400 Bad Request`. Markup is removed from the text fields before they are stored, as described in Member 2.3.
+
+## Member 1.4 React Gig Management Interface
+
+The My Gigs page allows freelancers to manage their listings.
+
+- **Create and edit:** A single form creates a new gig or edits the selected gig.
+- **Listings:** Each gig is shown with its category, price, delivery time and active status.
+- **Delete:** A gig is only deleted after the freelancer confirms.
+- **Feedback:** Success messages and the validation messages returned by the API are displayed, together with loading and empty states.
+- **Access:** The page is only available to freelancers.
+
+## Member 1.5 Main Implementation Files
+
+| File | Responsibility |
+|---|---|
+| `config/db.js` | MongoDB connection |
+| `models/Gig.js` | Gig schema |
+| `controllers/gigController.js` | Gig listing, creation, update and deletion with ownership checks |
+| `routes/gigRoutes.js` | Gig routes with authentication and role checks |
+| `validators/gigValidation.js` | Gig validation and sanitisation |
+| `frontend/src/pages/MyGigsPage.jsx` | Freelancer gig management page |
+| `frontend/src/components/GigForm.jsx` | Gig create and edit form |
+| `frontend/src/components/GigCard.jsx` | Gig listing card |
+
+---
+
 # Part 2 — Member 2: Authentication & Security
 
 **Team Member:** Raghav Maharaj  
