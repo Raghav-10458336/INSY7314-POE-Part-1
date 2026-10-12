@@ -2027,6 +2027,115 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Punctuation is stored as typed (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Characters such as & \\' \" and / are kept as typed', function () {",
+                  "    pm.expect(body.gig.title).to.eql(\"Logo & Brand: it's quick\")",
+                  "    pm.expect(body.gig.description).to.eql(\"Proofreading for \\\"small\\\" firms / start-ups, up to 2000 words\")",
+                  "    pm.expect(body.gig.category).to.eql(\"Design/Branding\")",
+                  "})",
+                  "if (body.gig) {",
+                  "    pm.collectionVariables.set('punctuationGigId', body.gig._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo & Brand: it's quick\",\n  \"description\": \"Proofreading for \\\"small\\\" firms / start-ups, up to 2000 words\",\n  \"category\": \"Design/Branding\",\n  \"price\": 15,\n  \"deliveryDays\": 1,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Punctuation gig is removed again (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{punctuationGigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{punctuationGigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -3825,6 +3934,10 @@
     },
     {
       "key": "tempGigId",
+      "value": ""
+    },
+    {
+      "key": "punctuationGigId",
       "value": ""
     },
     {
