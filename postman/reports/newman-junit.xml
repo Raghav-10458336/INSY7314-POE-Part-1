@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="HustleHub+ API Tests" tests="70" time="0.709">
+  <testsuite name="00 Setup / Health check (200)" id="c9396be2-f00b-4806-ab38-d1ba1d90eea3" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.014">
+    <testcase name="Response is JSON" time="0.014" classname="00SetupHealthCheck200"/>
+    <testcase name="No internal details in the response" time="0.014" classname="00SetupHealthCheck200"/>
+    <testcase name="Status is 200" time="0.014" classname="00SetupHealthCheck200"/>
+    <testcase name="API reports ok" time="0.014" classname="00SetupHealthCheck200"/>
+  </testsuite>
+  <testsuite name="01 Auth / Register freelancer A (201)" id="fc7ba308-f54f-4164-bee7-6e03c2dab7d4" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.078">
+    <testcase name="Response is JSON" time="0.078" classname="01AuthRegisterFreelancerA201"/>
+    <testcase name="No internal details in the response" time="0.078" classname="01AuthRegisterFreelancerA201"/>
+    <testcase name="Status is 201" time="0.078" classname="01AuthRegisterFreelancerA201"/>
+    <testcase name="Account is created without exposing the password" time="0.078" classname="01AuthRegisterFreelancerA201"/>
+  </testsuite>
+  <testsuite name="01 Auth / Register freelancer B (201)" id="1d8df117-40a1-4e55-8349-a80f53873456" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.054">
+    <testcase name="Response is JSON" time="0.054" classname="01AuthRegisterFreelancerB201"/>
+    <testcase name="No internal details in the response" time="0.054" classname="01AuthRegisterFreelancerB201"/>
+    <testcase name="Status is 201" time="0.054" classname="01AuthRegisterFreelancerB201"/>
+    <testcase name="Account is created without exposing the password" time="0.054" classname="01AuthRegisterFreelancerB201"/>
+  </testsuite>
+  <testsuite name="01 Auth / Register client (201)" id="14ab8cb6-8994-4fa1-ac6a-340212c7b83a" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.054">
+    <testcase name="Response is JSON" time="0.054" classname="01AuthRegisterClient201"/>
+    <testcase name="No internal details in the response" time="0.054" classname="01AuthRegisterClient201"/>
+    <testcase name="Status is 201" time="0.054" classname="01AuthRegisterClient201"/>
+    <testcase name="Account is created without exposing the password" time="0.054" classname="01AuthRegisterClient201"/>
+  </testsuite>
+  <testsuite name="01 Auth / Duplicate email is rejected (400)" id="736ebc45-a280-4f2f-a8ab-f6825c020caa" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="01AuthDuplicateEmailIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.006" classname="01AuthDuplicateEmailIsRejected400"/>
+    <testcase name="Status is 400 or 409" time="0.006" classname="01AuthDuplicateEmailIsRejected400"/>
+    <testcase name="A message explains the problem" time="0.006" classname="01AuthDuplicateEmailIsRejected400"/>
+  </testsuite>
+  <testsuite name="01 Auth / Admin role cannot be requested at sign up (400)" id="d17f20fe-8785-4109-bf6b-52e7fcb94d94" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="01AuthAdminRoleCannotBeRequestedAtSignUp400"/>
+    <testcase name="No internal details in the response" time="0.004" classname="01AuthAdminRoleCannotBeRequestedAtSignUp400"/>
+    <testcase name="Status is 400" time="0.004" classname="01AuthAdminRoleCannotBeRequestedAtSignUp400"/>
+    <testcase name="Validation details name the role field" time="0.004" classname="01AuthAdminRoleCannotBeRequestedAtSignUp400"/>
+  </testsuite>
+  <testsuite name="01 Auth / Log in freelancer A (200)" id="9d3a527b-7b53-4dc2-a478-ea1b8056b1b7" timestamp="2026-10-12T11:33:19.460Z" tests="6" failures="0" errors="0" time="0.054">
+    <testcase name="Response is JSON" time="0.054" classname="01AuthLogInFreelancerA200"/>
+    <testcase name="No internal details in the response" time="0.054" classname="01AuthLogInFreelancerA200"/>
+    <testcase name="Status is 200" time="0.054" classname="01AuthLogInFreelancerA200"/>
+    <testcase name="A signed token is returned" time="0.054" classname="01AuthLogInFreelancerA200"/>
+    <testcase name="Token carries the user id and role only" time="0.054" classname="01AuthLogInFreelancerA200"/>
+    <testcase name="Token expires within the hour" time="0.054" classname="01AuthLogInFreelancerA200"/>
+  </testsuite>
+  <testsuite name="01 Auth / Log in freelancer B (200)" id="63a12dff-6eeb-42eb-91aa-a07b97318d5c" timestamp="2026-10-12T11:33:19.460Z" tests="6" failures="0" errors="0" time="0.052">
+    <testcase name="Response is JSON" time="0.052" classname="01AuthLogInFreelancerB200"/>
+    <testcase name="No internal details in the response" time="0.052" classname="01AuthLogInFreelancerB200"/>
+    <testcase name="Status is 200" time="0.052" classname="01AuthLogInFreelancerB200"/>
+    <testcase name="A signed token is returned" time="0.052" classname="01AuthLogInFreelancerB200"/>
+    <testcase name="Token carries the user id and role only" time="0.052" classname="01AuthLogInFreelancerB200"/>
+    <testcase name="Token expires within the hour" time="0.052" classname="01AuthLogInFreelancerB200"/>
+  </testsuite>
+  <testsuite name="01 Auth / Log in client (200)" id="b038f87f-794e-4047-a241-fd92f3bba664" timestamp="2026-10-12T11:33:19.460Z" tests="6" failures="0" errors="0" time="0.051">
+    <testcase name="Response is JSON" time="0.051" classname="01AuthLogInClient200"/>
+    <testcase name="No internal details in the response" time="0.051" classname="01AuthLogInClient200"/>
+    <testcase name="Status is 200" time="0.051" classname="01AuthLogInClient200"/>
+    <testcase name="A signed token is returned" time="0.051" classname="01AuthLogInClient200"/>
+    <testcase name="Token carries the user id and role only" time="0.051" classname="01AuthLogInClient200"/>
+    <testcase name="Token expires within the hour" time="0.051" classname="01AuthLogInClient200"/>
+  </testsuite>
+  <testsuite name="01 Auth / Wrong password is rejected (401)" id="f5cb4e5b-94cf-47c1-815d-76d25cebb75b" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.053">
+    <testcase name="Response is JSON" time="0.053" classname="01AuthWrongPasswordIsRejected401"/>
+    <testcase name="No internal details in the response" time="0.053" classname="01AuthWrongPasswordIsRejected401"/>
+    <testcase name="Status is 401" time="0.053" classname="01AuthWrongPasswordIsRejected401"/>
+    <testcase name="Error message is &quot;invalid email or password&quot;" time="0.053" classname="01AuthWrongPasswordIsRejected401"/>
+  </testsuite>
+  <testsuite name="01 Auth / Unknown email gets the same answer as a wrong password (401)" id="0d8280c0-f033-4b22-a620-400cb5fcae80" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="01AuthUnknownEmailGetsTheSameAnswerAsAWrongPassword401"/>
+    <testcase name="No internal details in the response" time="0.004" classname="01AuthUnknownEmailGetsTheSameAnswerAsAWrongPassword401"/>
+    <testcase name="Status is 401" time="0.004" classname="01AuthUnknownEmailGetsTheSameAnswerAsAWrongPassword401"/>
+    <testcase name="Error message is &quot;invalid email or password&quot;" time="0.004" classname="01AuthUnknownEmailGetsTheSameAnswerAsAWrongPassword401"/>
+  </testsuite>
+  <testsuite name="01 Auth / Login without a password is rejected (400)" id="eaaa875f-7a4d-4344-8057-e92d57544afc" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="01AuthLoginWithoutAPasswordIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.002" classname="01AuthLoginWithoutAPasswordIsRejected400"/>
+    <testcase name="Status is 400" time="0.002" classname="01AuthLoginWithoutAPasswordIsRejected400"/>
+    <testcase name="Validation details name the password field" time="0.002" classname="01AuthLoginWithoutAPasswordIsRejected400"/>
+  </testsuite>
+  <testsuite name="01 Auth / Login with an invalid email is rejected (400)" id="883ce48c-7a92-4032-99b6-59e0a5b0ebb1" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="01AuthLoginWithAnInvalidEmailIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.002" classname="01AuthLoginWithAnInvalidEmailIsRejected400"/>
+    <testcase name="Status is 400" time="0.002" classname="01AuthLoginWithAnInvalidEmailIsRejected400"/>
+    <testcase name="Validation details name the email field" time="0.002" classname="01AuthLoginWithAnInvalidEmailIsRejected400"/>
+  </testsuite>
+  <testsuite name="01 Auth / Current user with a valid token (200)" id="8f1ff95d-2f2b-4a63-8731-ca2bbe562a1d" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="01AuthCurrentUserWithAValidToken200"/>
+    <testcase name="No internal details in the response" time="0.005" classname="01AuthCurrentUserWithAValidToken200"/>
+    <testcase name="Status is 200" time="0.005" classname="01AuthCurrentUserWithAValidToken200"/>
+    <testcase name="The token owner is returned" time="0.005" classname="01AuthCurrentUserWithAValidToken200"/>
+  </testsuite>
+  <testsuite name="01 Auth / Current user without a token (401)" id="725107bd-cad7-4a61-82ee-2913434a11b7" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.001">
+    <testcase name="Response is JSON" time="0.001" classname="01AuthCurrentUserWithoutAToken401"/>
+    <testcase name="No internal details in the response" time="0.001" classname="01AuthCurrentUserWithoutAToken401"/>
+    <testcase name="Status is 401" time="0.001" classname="01AuthCurrentUserWithoutAToken401"/>
+    <testcase name="Error message is &quot;unauthorized&quot;" time="0.001" classname="01AuthCurrentUserWithoutAToken401"/>
+  </testsuite>
+  <testsuite name="01 Auth / Tampered token is rejected (401)" id="f1f156b4-6f77-43cf-bbf8-f250ade4822a" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="01AuthTamperedTokenIsRejected401"/>
+    <testcase name="No internal details in the response" time="0.002" classname="01AuthTamperedTokenIsRejected401"/>
+    <testcase name="Status is 401" time="0.002" classname="01AuthTamperedTokenIsRejected401"/>
+    <testcase name="Error message is &quot;unauthorized&quot;" time="0.002" classname="01AuthTamperedTokenIsRejected401"/>
+  </testsuite>
+  <testsuite name="01 Auth / Wrong authorization scheme is rejected (401)" id="7cd5811a-4247-4805-a3cf-397fe5ec7f34" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="01AuthWrongAuthorizationSchemeIsRejected401"/>
+    <testcase name="No internal details in the response" time="0.002" classname="01AuthWrongAuthorizationSchemeIsRejected401"/>
+    <testcase name="Status is 401" time="0.002" classname="01AuthWrongAuthorizationSchemeIsRejected401"/>
+    <testcase name="Error message is &quot;unauthorized&quot;" time="0.002" classname="01AuthWrongAuthorizationSchemeIsRejected401"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A creates a gig (201)" id="6e8c0b82-1a08-47cd-aa78-c066df24967a" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="02GigsFreelancerACreatesAGig201"/>
+    <testcase name="No internal details in the response" time="0.006" classname="02GigsFreelancerACreatesAGig201"/>
+    <testcase name="Status is 201" time="0.006" classname="02GigsFreelancerACreatesAGig201"/>
+    <testcase name="Gig is stored and owned by the token holder" time="0.006" classname="02GigsFreelancerACreatesAGig201"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A creates a second gig (201)" id="27aaa054-89d8-4c16-aab6-e28735c054f1" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsFreelancerACreatesASecondGig201"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsFreelancerACreatesASecondGig201"/>
+    <testcase name="Status is 201" time="0.004" classname="02GigsFreelancerACreatesASecondGig201"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A creates an inactive gig (201)" id="ce2c5701-b743-4311-bbd7-258a72264a2e" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="02GigsFreelancerACreatesAnInactiveGig201"/>
+    <testcase name="No internal details in the response" time="0.005" classname="02GigsFreelancerACreatesAnInactiveGig201"/>
+    <testcase name="Status is 201" time="0.005" classname="02GigsFreelancerACreatesAnInactiveGig201"/>
+    <testcase name="Gig is saved as inactive" time="0.005" classname="02GigsFreelancerACreatesAnInactiveGig201"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Negative price is rejected (400)" id="a396d903-7a42-4d13-a33d-0bd56bfb92d6" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="02GigsNegativePriceIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.003" classname="02GigsNegativePriceIsRejected400"/>
+    <testcase name="Status is 400" time="0.003" classname="02GigsNegativePriceIsRejected400"/>
+    <testcase name="Validation details name the price field" time="0.003" classname="02GigsNegativePriceIsRejected400"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Missing title is rejected (400)" id="0cf7d6ff-b675-4bd9-9bb7-7fd20ee883a7" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="02GigsMissingTitleIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.003" classname="02GigsMissingTitleIsRejected400"/>
+    <testcase name="Status is 400" time="0.003" classname="02GigsMissingTitleIsRejected400"/>
+    <testcase name="Validation details name the title field" time="0.003" classname="02GigsMissingTitleIsRejected400"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Extra owner field is rejected (400)" id="f8bd39a5-8df2-4065-ae5a-342519c2dcfd" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="02GigsExtraOwnerFieldIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.005" classname="02GigsExtraOwnerFieldIsRejected400"/>
+    <testcase name="Status is 400" time="0.005" classname="02GigsExtraOwnerFieldIsRejected400"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Client cannot create a gig (403)" id="ba529460-7fe6-48f9-b79b-7938d0868f38" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="02GigsClientCannotCreateAGig403"/>
+    <testcase name="No internal details in the response" time="0.003" classname="02GigsClientCannotCreateAGig403"/>
+    <testcase name="Status is 403" time="0.003" classname="02GigsClientCannotCreateAGig403"/>
+    <testcase name="Error message is &quot;forbidden&quot;" time="0.003" classname="02GigsClientCannotCreateAGig403"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Creating a gig without a token is rejected (401)" id="f7c0e9b6-842f-4ac5-aab6-860b4fb94a06" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="02GigsCreatingAGigWithoutATokenIsRejected401"/>
+    <testcase name="No internal details in the response" time="0.002" classname="02GigsCreatingAGigWithoutATokenIsRejected401"/>
+    <testcase name="Status is 401" time="0.002" classname="02GigsCreatingAGigWithoutATokenIsRejected401"/>
+    <testcase name="Error message is &quot;unauthorized&quot;" time="0.002" classname="02GigsCreatingAGigWithoutATokenIsRejected401"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Public list shows active gigs only (200)" id="b0e74a1d-3ef7-479d-9c5c-02f6a0112bd1" timestamp="2026-10-12T11:33:19.460Z" tests="5" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsPublicListShowsActiveGigsOnly200"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsPublicListShowsActiveGigsOnly200"/>
+    <testcase name="Status is 200" time="0.004" classname="02GigsPublicListShowsActiveGigsOnly200"/>
+    <testcase name="Both active gigs are listed" time="0.004" classname="02GigsPublicListShowsActiveGigsOnly200"/>
+    <testcase name="The inactive gig is hidden" time="0.004" classname="02GigsPublicListShowsActiveGigsOnly200"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A sees all of their own gigs (200)" id="f15ff24d-372b-4a3f-80e8-3d44de5152c4" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="02GigsFreelancerASeesAllOfTheirOwnGigs200"/>
+    <testcase name="No internal details in the response" time="0.006" classname="02GigsFreelancerASeesAllOfTheirOwnGigs200"/>
+    <testcase name="Status is 200" time="0.006" classname="02GigsFreelancerASeesAllOfTheirOwnGigs200"/>
+    <testcase name="Active and inactive gigs are included" time="0.006" classname="02GigsFreelancerASeesAllOfTheirOwnGigs200"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer B has no gigs of their own (200)" id="caa6dc2b-1181-4b43-84b8-18b607bb4242" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsFreelancerBHasNoGigsOfTheirOwn200"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsFreelancerBHasNoGigsOfTheirOwn200"/>
+    <testcase name="Status is 200" time="0.004" classname="02GigsFreelancerBHasNoGigsOfTheirOwn200"/>
+    <testcase name="Other freelancers gigs are not included" time="0.004" classname="02GigsFreelancerBHasNoGigsOfTheirOwn200"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Client cannot list freelancer gigs (403)" id="d3438501-b7f5-4bb7-8fb1-ed3af15f739a" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="02GigsClientCannotListFreelancerGigs403"/>
+    <testcase name="No internal details in the response" time="0.003" classname="02GigsClientCannotListFreelancerGigs403"/>
+    <testcase name="Status is 403" time="0.003" classname="02GigsClientCannotListFreelancerGigs403"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A updates their gig (200)" id="cb1a88d0-4735-4dbd-b032-5dad10917c01" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.008">
+    <testcase name="Response is JSON" time="0.008" classname="02GigsFreelancerAUpdatesTheirGig200"/>
+    <testcase name="No internal details in the response" time="0.008" classname="02GigsFreelancerAUpdatesTheirGig200"/>
+    <testcase name="Status is 200" time="0.008" classname="02GigsFreelancerAUpdatesTheirGig200"/>
+    <testcase name="The change is returned" time="0.008" classname="02GigsFreelancerAUpdatesTheirGig200"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer B cannot update freelancer A gig (404)" id="ef83bbc3-2b8e-4f05-889f-2ccfaa8dbb97" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="02GigsFreelancerBCannotUpdateFreelancerAGig404"/>
+    <testcase name="No internal details in the response" time="0.006" classname="02GigsFreelancerBCannotUpdateFreelancerAGig404"/>
+    <testcase name="Status is 403 or 404" time="0.006" classname="02GigsFreelancerBCannotUpdateFreelancerAGig404"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer B cannot delete freelancer A gig (404)" id="aa1c2461-824d-4dae-8fd5-407ad457e778" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="02GigsFreelancerBCannotDeleteFreelancerAGig404"/>
+    <testcase name="No internal details in the response" time="0.006" classname="02GigsFreelancerBCannotDeleteFreelancerAGig404"/>
+    <testcase name="Status is 403 or 404" time="0.006" classname="02GigsFreelancerBCannotDeleteFreelancerAGig404"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Client cannot update a gig (403)" id="5c6a776a-48d5-4d1b-a050-da4a28ee2226" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsClientCannotUpdateAGig403"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsClientCannotUpdateAGig403"/>
+    <testcase name="Status is 403" time="0.004" classname="02GigsClientCannotUpdateAGig403"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Gig is unchanged after the blocked attempts (200)" id="453bd96e-d828-4e75-9368-e73efc6d0a7f" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="02GigsGigIsUnchangedAfterTheBlockedAttempts200"/>
+    <testcase name="No internal details in the response" time="0.003" classname="02GigsGigIsUnchangedAfterTheBlockedAttempts200"/>
+    <testcase name="Status is 200" time="0.003" classname="02GigsGigIsUnchangedAfterTheBlockedAttempts200"/>
+    <testcase name="Gig still exists with the owner changes only" time="0.003" classname="02GigsGigIsUnchangedAfterTheBlockedAttempts200"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Malformed gig id is rejected (400)" id="7a28a5d6-dfdf-437b-93ea-22f1cc7bd4f5" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsMalformedGigIdIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsMalformedGigIdIsRejected400"/>
+    <testcase name="Status is 400" time="0.004" classname="02GigsMalformedGigIdIsRejected400"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A creates a temporary gig (201)" id="489708e0-9489-451a-8760-9accc3a18fd9" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="02GigsFreelancerACreatesATemporaryGig201"/>
+    <testcase name="No internal details in the response" time="0.006" classname="02GigsFreelancerACreatesATemporaryGig201"/>
+    <testcase name="Status is 201" time="0.006" classname="02GigsFreelancerACreatesATemporaryGig201"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Freelancer A deletes the temporary gig (200)" id="0d0d558a-0a1f-4f13-856c-8ac78f88022a" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsFreelancerADeletesTheTemporaryGig200"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsFreelancerADeletesTheTemporaryGig200"/>
+    <testcase name="Status is 200" time="0.004" classname="02GigsFreelancerADeletesTheTemporaryGig200"/>
+  </testsuite>
+  <testsuite name="02 Gigs / Deleting the same gig again finds nothing (404)" id="ca55039c-ee19-4f73-a304-48dd47a4e2b0" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="02GigsDeletingTheSameGigAgainFindsNothing404"/>
+    <testcase name="No internal details in the response" time="0.004" classname="02GigsDeletingTheSameGigAgainFindsNothing404"/>
+    <testcase name="Status is 404" time="0.004" classname="02GigsDeletingTheSameGigAgainFindsNothing404"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Client books the first gig (201)" id="42d32bb4-c769-45b2-842b-31871f6404f7" timestamp="2026-10-12T11:33:19.460Z" tests="5" failures="0" errors="0" time="0.007">
+    <testcase name="Response is JSON" time="0.007" classname="03BookingsClientBooksTheFirstGig201"/>
+    <testcase name="No internal details in the response" time="0.007" classname="03BookingsClientBooksTheFirstGig201"/>
+    <testcase name="Status is 201" time="0.007" classname="03BookingsClientBooksTheFirstGig201"/>
+    <testcase name="Booking uses the gig price and the right people" time="0.007" classname="03BookingsClientBooksTheFirstGig201"/>
+    <testcase name="A confirmed transaction is created for the booking" time="0.007" classname="03BookingsClientBooksTheFirstGig201"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Client books the second gig (201)" id="8f9a7751-146c-4a5f-b66c-253cf0eca947" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.007">
+    <testcase name="Response is JSON" time="0.007" classname="03BookingsClientBooksTheSecondGig201"/>
+    <testcase name="No internal details in the response" time="0.007" classname="03BookingsClientBooksTheSecondGig201"/>
+    <testcase name="Status is 201" time="0.007" classname="03BookingsClientBooksTheSecondGig201"/>
+    <testcase name="Amount is 120.5 and a transaction exists" time="0.007" classname="03BookingsClientBooksTheSecondGig201"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Price in the request body is rejected (400)" id="3ec2c0d0-bbf8-40d2-8764-b4b3cdab182a" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="03BookingsPriceInTheRequestBodyIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.003" classname="03BookingsPriceInTheRequestBodyIsRejected400"/>
+    <testcase name="Status is 400" time="0.003" classname="03BookingsPriceInTheRequestBodyIsRejected400"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Malformed gig id is rejected (400)" id="dded0520-f8d3-4d47-adbe-82ca827ecced" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="03BookingsMalformedGigIdIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.005" classname="03BookingsMalformedGigIdIsRejected400"/>
+    <testcase name="Status is 400" time="0.005" classname="03BookingsMalformedGigIdIsRejected400"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Unknown gig cannot be booked (404)" id="75962a0a-1424-46d7-af38-c2d262cda9c6" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="03BookingsUnknownGigCannotBeBooked404"/>
+    <testcase name="No internal details in the response" time="0.004" classname="03BookingsUnknownGigCannotBeBooked404"/>
+    <testcase name="Status is 404" time="0.004" classname="03BookingsUnknownGigCannotBeBooked404"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Inactive gig cannot be booked (404)" id="51eae97d-c9ff-414c-aeb3-53f1d1ee1685" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="03BookingsInactiveGigCannotBeBooked404"/>
+    <testcase name="No internal details in the response" time="0.005" classname="03BookingsInactiveGigCannotBeBooked404"/>
+    <testcase name="Status is 404" time="0.005" classname="03BookingsInactiveGigCannotBeBooked404"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Freelancer cannot book a gig (403)" id="bd87b179-9eb0-4046-b4ff-e10c03b0f133" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="03BookingsFreelancerCannotBookAGig403"/>
+    <testcase name="No internal details in the response" time="0.004" classname="03BookingsFreelancerCannotBookAGig403"/>
+    <testcase name="Status is 403" time="0.004" classname="03BookingsFreelancerCannotBookAGig403"/>
+    <testcase name="Error message is &quot;forbidden&quot;" time="0.004" classname="03BookingsFreelancerCannotBookAGig403"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Booking without a token is rejected (401)" id="c9b56b53-c8e6-499d-b8fa-eca5e35366db" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="03BookingsBookingWithoutATokenIsRejected401"/>
+    <testcase name="No internal details in the response" time="0.003" classname="03BookingsBookingWithoutATokenIsRejected401"/>
+    <testcase name="Status is 401" time="0.003" classname="03BookingsBookingWithoutATokenIsRejected401"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Client sees their bookings with transactions (200)" id="367b12ab-aee1-48e9-b205-9720d511d318" timestamp="2026-10-12T11:33:19.460Z" tests="5" failures="0" errors="0" time="0.010">
+    <testcase name="Response is JSON" time="0.010" classname="03BookingsClientSeesTheirBookingsWithTransactions200"/>
+    <testcase name="No internal details in the response" time="0.010" classname="03BookingsClientSeesTheirBookingsWithTransactions200"/>
+    <testcase name="Status is 200" time="0.010" classname="03BookingsClientSeesTheirBookingsWithTransactions200"/>
+    <testcase name="Both bookings are listed" time="0.010" classname="03BookingsClientSeesTheirBookingsWithTransactions200"/>
+    <testcase name="Every booking points at a confirmed transaction" time="0.010" classname="03BookingsClientSeesTheirBookingsWithTransactions200"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Freelancer A sees bookings for their gigs (200)" id="ef340412-002e-4f70-bea1-c7899fe13dcf" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="03BookingsFreelancerASeesBookingsForTheirGigs200"/>
+    <testcase name="No internal details in the response" time="0.006" classname="03BookingsFreelancerASeesBookingsForTheirGigs200"/>
+    <testcase name="Status is 200" time="0.006" classname="03BookingsFreelancerASeesBookingsForTheirGigs200"/>
+    <testcase name="Both bookings belong to freelancer A" time="0.006" classname="03BookingsFreelancerASeesBookingsForTheirGigs200"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Freelancer B sees none of those bookings (200)" id="43e9e0c5-d5be-4d42-adee-e3275a71f8af" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.007">
+    <testcase name="Response is JSON" time="0.007" classname="03BookingsFreelancerBSeesNoneOfThoseBookings200"/>
+    <testcase name="No internal details in the response" time="0.007" classname="03BookingsFreelancerBSeesNoneOfThoseBookings200"/>
+    <testcase name="Status is 200" time="0.007" classname="03BookingsFreelancerBSeesNoneOfThoseBookings200"/>
+    <testcase name="No bookings leak to another freelancer" time="0.007" classname="03BookingsFreelancerBSeesNoneOfThoseBookings200"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Client cannot read the freelancer booking list (403)" id="9110faff-81c2-4caf-99bf-7610e9a2ed5f" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="03BookingsClientCannotReadTheFreelancerBookingList403"/>
+    <testcase name="No internal details in the response" time="0.003" classname="03BookingsClientCannotReadTheFreelancerBookingList403"/>
+    <testcase name="Status is 403" time="0.003" classname="03BookingsClientCannotReadTheFreelancerBookingList403"/>
+  </testsuite>
+  <testsuite name="03 Bookings / Freelancer cannot read the client booking list (403)" id="35b14fdb-d829-4caa-bb42-efe005e4b7f0" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="03BookingsFreelancerCannotReadTheClientBookingList403"/>
+    <testcase name="No internal details in the response" time="0.003" classname="03BookingsFreelancerCannotReadTheClientBookingList403"/>
+    <testcase name="Status is 403" time="0.003" classname="03BookingsFreelancerCannotReadTheClientBookingList403"/>
+  </testsuite>
+  <testsuite name="04 Income / Freelancer A income matches the bookings (200)" id="33c957b9-5eb1-4a03-a1c7-fedb851700e6" timestamp="2026-10-12T11:33:19.460Z" tests="6" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="04IncomeFreelancerAIncomeMatchesTheBookings200"/>
+    <testcase name="No internal details in the response" time="0.006" classname="04IncomeFreelancerAIncomeMatchesTheBookings200"/>
+    <testcase name="Status is 200" time="0.006" classname="04IncomeFreelancerAIncomeMatchesTheBookings200"/>
+    <testcase name="Total and count add up" time="0.006" classname="04IncomeFreelancerAIncomeMatchesTheBookings200"/>
+    <testcase name="Rows point at the real booking and transaction" time="0.006" classname="04IncomeFreelancerAIncomeMatchesTheBookings200"/>
+    <testcase name="Rows carry the gig title and no client details" time="0.006" classname="04IncomeFreelancerAIncomeMatchesTheBookings200"/>
+  </testsuite>
+  <testsuite name="04 Income / Freelancer B income is separate (200)" id="13d83c0b-3571-48c8-af7d-99d289ce8457" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="04IncomeFreelancerBIncomeIsSeparate200"/>
+    <testcase name="No internal details in the response" time="0.005" classname="04IncomeFreelancerBIncomeIsSeparate200"/>
+    <testcase name="Status is 200" time="0.005" classname="04IncomeFreelancerBIncomeIsSeparate200"/>
+    <testcase name="Nothing from freelancer A shows up" time="0.005" classname="04IncomeFreelancerBIncomeIsSeparate200"/>
+  </testsuite>
+  <testsuite name="04 Income / Choosing another freelancer in the query is ignored (200)" id="9cdb5d5c-b8f4-47f3-892a-8c44b6a060ce" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="04IncomeChoosingAnotherFreelancerInTheQueryIsIgnored200"/>
+    <testcase name="No internal details in the response" time="0.006" classname="04IncomeChoosingAnotherFreelancerInTheQueryIsIgnored200"/>
+    <testcase name="Status is 200" time="0.006" classname="04IncomeChoosingAnotherFreelancerInTheQueryIsIgnored200"/>
+    <testcase name="Income is still freelancer A own total" time="0.006" classname="04IncomeChoosingAnotherFreelancerInTheQueryIsIgnored200"/>
+  </testsuite>
+  <testsuite name="04 Income / Client cannot read income (403)" id="2bb0b383-5927-41d8-a53a-3492980db02e" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="04IncomeClientCannotReadIncome403"/>
+    <testcase name="No internal details in the response" time="0.003" classname="04IncomeClientCannotReadIncome403"/>
+    <testcase name="Status is 403" time="0.003" classname="04IncomeClientCannotReadIncome403"/>
+    <testcase name="Error message is &quot;forbidden&quot;" time="0.003" classname="04IncomeClientCannotReadIncome403"/>
+  </testsuite>
+  <testsuite name="04 Income / Income without a token is rejected (401)" id="f2bba65e-b0e1-4cc0-8e34-8498175b0552" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="04IncomeIncomeWithoutATokenIsRejected401"/>
+    <testcase name="No internal details in the response" time="0.002" classname="04IncomeIncomeWithoutATokenIsRejected401"/>
+    <testcase name="Status is 401" time="0.002" classname="04IncomeIncomeWithoutATokenIsRejected401"/>
+    <testcase name="Error message is &quot;unauthorized&quot;" time="0.002" classname="04IncomeIncomeWithoutATokenIsRejected401"/>
+  </testsuite>
+  <testsuite name="04 Income / Freelancer A deletes a booked gig (200)" id="a2108840-b55c-4c27-865b-4f4d62e6c2fe" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="04IncomeFreelancerADeletesABookedGig200"/>
+    <testcase name="No internal details in the response" time="0.004" classname="04IncomeFreelancerADeletesABookedGig200"/>
+    <testcase name="Status is 200" time="0.004" classname="04IncomeFreelancerADeletesABookedGig200"/>
+  </testsuite>
+  <testsuite name="04 Income / Income is kept after the gig is deleted (200)" id="9255947d-7ced-4629-a3b6-a217f78efd6b" timestamp="2026-10-12T11:33:19.460Z" tests="5" failures="0" errors="0" time="0.006">
+    <testcase name="Response is JSON" time="0.006" classname="04IncomeIncomeIsKeptAfterTheGigIsDeleted200"/>
+    <testcase name="No internal details in the response" time="0.006" classname="04IncomeIncomeIsKeptAfterTheGigIsDeleted200"/>
+    <testcase name="Status is 200" time="0.006" classname="04IncomeIncomeIsKeptAfterTheGigIsDeleted200"/>
+    <testcase name="Total and count are unchanged" time="0.006" classname="04IncomeIncomeIsKeptAfterTheGigIsDeleted200"/>
+    <testcase name="The removed gig shows up as null" time="0.006" classname="04IncomeIncomeIsKeptAfterTheGigIsDeleted200"/>
+  </testsuite>
+  <testsuite name="05 Security / Security headers are set (200)" id="1dea2c42-91b2-4828-8b9e-907d440bd24a" timestamp="2026-10-12T11:33:19.460Z" tests="7" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+    <testcase name="No internal details in the response" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+    <testcase name="Status is 200" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+    <testcase name="Content Security Policy restricts resources" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+    <testcase name="MIME sniffing is blocked" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+    <testcase name="Strict-Transport-Security is set" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+    <testcase name="Express is not advertised" time="0.002" classname="05SecuritySecurityHeadersAreSet200"/>
+  </testsuite>
+  <testsuite name="05 Security / Approved frontend origin gets CORS headers (200)" id="01b363c7-4f26-477e-ab6c-e85688aa0096" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.001">
+    <testcase name="Response is JSON" time="0.001" classname="05SecurityApprovedFrontendOriginGetsCorsHeaders200"/>
+    <testcase name="No internal details in the response" time="0.001" classname="05SecurityApprovedFrontendOriginGetsCorsHeaders200"/>
+    <testcase name="Status is 200" time="0.001" classname="05SecurityApprovedFrontendOriginGetsCorsHeaders200"/>
+    <testcase name="Origin is echoed back" time="0.001" classname="05SecurityApprovedFrontendOriginGetsCorsHeaders200"/>
+  </testsuite>
+  <testsuite name="05 Security / Unknown origin gets no CORS headers (200)" id="f977c007-97e6-4b37-b133-e40dc7ee26dc" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.002">
+    <testcase name="Response is JSON" time="0.002" classname="05SecurityUnknownOriginGetsNoCorsHeaders200"/>
+    <testcase name="No internal details in the response" time="0.002" classname="05SecurityUnknownOriginGetsNoCorsHeaders200"/>
+    <testcase name="Status is 200" time="0.002" classname="05SecurityUnknownOriginGetsNoCorsHeaders200"/>
+    <testcase name="Cross origin access is not granted" time="0.002" classname="05SecurityUnknownOriginGetsNoCorsHeaders200"/>
+  </testsuite>
+  <testsuite name="05 Security / Unknown route returns a plain 404 (404)" id="12f1f221-29ae-4b8b-b4df-9895920dd8fd" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.001">
+    <testcase name="Response is JSON" time="0.001" classname="05SecurityUnknownRouteReturnsAPlain404404"/>
+    <testcase name="No internal details in the response" time="0.001" classname="05SecurityUnknownRouteReturnsAPlain404404"/>
+    <testcase name="Status is 404" time="0.001" classname="05SecurityUnknownRouteReturnsAPlain404404"/>
+    <testcase name="Error message is &quot;not found&quot;" time="0.001" classname="05SecurityUnknownRouteReturnsAPlain404404"/>
+  </testsuite>
+  <testsuite name="05 Security / Malformed JSON is rejected cleanly (400)" id="4d3ed02b-443f-4333-9ed6-a595458ffb9c" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="05SecurityMalformedJsonIsRejectedCleanly400"/>
+    <testcase name="No internal details in the response" time="0.003" classname="05SecurityMalformedJsonIsRejectedCleanly400"/>
+    <testcase name="Status is 400" time="0.003" classname="05SecurityMalformedJsonIsRejectedCleanly400"/>
+    <testcase name="Body has an error message only" time="0.003" classname="05SecurityMalformedJsonIsRejectedCleanly400"/>
+  </testsuite>
+  <testsuite name="05 Security / Oversized body is rejected (413)" id="4f101570-e02f-466e-a2e0-194102343d45" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="05SecurityOversizedBodyIsRejected413"/>
+    <testcase name="No internal details in the response" time="0.003" classname="05SecurityOversizedBodyIsRejected413"/>
+    <testcase name="Status is 413" time="0.003" classname="05SecurityOversizedBodyIsRejected413"/>
+  </testsuite>
+  <testsuite name="05 Security / Operator injection in login is rejected (400)" id="9eb45608-62f1-4fc9-b22c-d2d54630d608" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="05SecurityOperatorInjectionInLoginIsRejected400"/>
+    <testcase name="No internal details in the response" time="0.003" classname="05SecurityOperatorInjectionInLoginIsRejected400"/>
+    <testcase name="Status is 400" time="0.003" classname="05SecurityOperatorInjectionInLoginIsRejected400"/>
+  </testsuite>
+  <testsuite name="05 Security / Script in a gig is not stored as markup (201)" id="a45a18cc-c00a-420b-a959-af79c93d9747" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.005">
+    <testcase name="Response is JSON" time="0.005" classname="05SecurityScriptInAGigIsNotStoredAsMarkup201"/>
+    <testcase name="No internal details in the response" time="0.005" classname="05SecurityScriptInAGigIsNotStoredAsMarkup201"/>
+    <testcase name="Status is 201" time="0.005" classname="05SecurityScriptInAGigIsNotStoredAsMarkup201"/>
+    <testcase name="Tags are neutralised before storage" time="0.005" classname="05SecurityScriptInAGigIsNotStoredAsMarkup201"/>
+  </testsuite>
+  <testsuite name="05 Security / Script gig is removed again (200)" id="b45abd5b-f379-4fb7-a871-9ce7ef13dddf" timestamp="2026-10-12T11:33:19.460Z" tests="3" failures="0" errors="0" time="0.004">
+    <testcase name="Response is JSON" time="0.004" classname="05SecurityScriptGigIsRemovedAgain200"/>
+    <testcase name="No internal details in the response" time="0.004" classname="05SecurityScriptGigIsRemovedAgain200"/>
+    <testcase name="Status is 200" time="0.004" classname="05SecurityScriptGigIsRemovedAgain200"/>
+  </testsuite>
+  <testsuite name="06 Rate limits / Repeated bookings hit the limit (429)" id="35e08060-eb63-4f3c-b538-89b7e9aea80e" timestamp="2026-10-12T11:33:19.460Z" tests="5" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="06RateLimitsRepeatedBookingsHitTheLimit429"/>
+    <testcase name="No internal details in the response" time="0.003" classname="06RateLimitsRepeatedBookingsHitTheLimit429"/>
+    <testcase name="Status is 429" time="0.003" classname="06RateLimitsRepeatedBookingsHitTheLimit429"/>
+    <testcase name="The message says to wait" time="0.003" classname="06RateLimitsRepeatedBookingsHitTheLimit429"/>
+    <testcase name="Retry-After tells the client how long" time="0.003" classname="06RateLimitsRepeatedBookingsHitTheLimit429"/>
+  </testsuite>
+  <testsuite name="06 Rate limits / Repeated failed logins hit the limit (429)" id="dd666bb4-e2a8-43b9-b602-1f10626cf4d3" timestamp="2026-10-12T11:33:19.460Z" tests="5" failures="0" errors="0" time="0.001">
+    <testcase name="Response is JSON" time="0.001" classname="06RateLimitsRepeatedFailedLoginsHitTheLimit429"/>
+    <testcase name="No internal details in the response" time="0.001" classname="06RateLimitsRepeatedFailedLoginsHitTheLimit429"/>
+    <testcase name="Status is 429" time="0.001" classname="06RateLimitsRepeatedFailedLoginsHitTheLimit429"/>
+    <testcase name="The message says to wait" time="0.001" classname="06RateLimitsRepeatedFailedLoginsHitTheLimit429"/>
+    <testcase name="Retry-After tells the client how long" time="0.001" classname="06RateLimitsRepeatedFailedLoginsHitTheLimit429"/>
+  </testsuite>
+  <testsuite name="06 Rate limits / Registrations past the hourly limit are blocked (429)" id="0eb3533a-76ff-4656-999d-368d7d71c84d" timestamp="2026-10-12T11:33:19.460Z" tests="4" failures="0" errors="0" time="0.003">
+    <testcase name="Response is JSON" time="0.003" classname="06RateLimitsRegistrationsPastTheHourlyLimitAreBlocked429"/>
+    <testcase name="No internal details in the response" time="0.003" classname="06RateLimitsRegistrationsPastTheHourlyLimitAreBlocked429"/>
+    <testcase name="Status is 429" time="0.003" classname="06RateLimitsRegistrationsPastTheHourlyLimitAreBlocked429"/>
+    <testcase name="The message says to try later" time="0.003" classname="06RateLimitsRegistrationsPastTheHourlyLimitAreBlocked429"/>
+  </testsuite>
+</testsuites>

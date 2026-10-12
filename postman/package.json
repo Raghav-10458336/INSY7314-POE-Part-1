@@ -1,0 +1,12 @@
+{
+  "name": "hustlehub-api-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Newman runner for the HustleHub+ API collection",
+  "scripts": {
+    "test": "node runNewman.js"
+  },
+  "devDependencies": {
+    "newman": "^6.2.3"
+  }
+}

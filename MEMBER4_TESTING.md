@@ -1,151 +1,157 @@
-# Member 4 - Validation, Testing, Demo & Submission
+# Member 4 - Income, Testing and Demo (Part 2)
 
-This document records the work completed for Member 4 of the INSY7314 POE Part 1 HustleHub+ project.
+This document covers the Member 4 work for INSY7314 POE Part 2: freelancer income tracking, the Postman and Newman API tests, the React tests, the evidence files and the demo video.
 
-## 1. Validation implementation
+## 1. Income tracking
 
-Validation is implemented with `express-validator`, which is already included in the project dependencies.
+`GET /api/income` returns the income of the freelancer who owns the token.
 
-### Registration validation
+- Freelancers only. A client gets `403`, a request with no valid token gets `401`.
+- The freelancer is always taken from the JWT. Query parameters such as `?freelancer=<id>` are ignored.
+- Only confirmed transactions are counted.
+- If a gig is deleted after it was booked, the transaction and the income stay and the row shows the gig as `null`.
 
-`POST /api/auth/register` checks that:
-
-- `name` is present and between 2 and 50 characters.
-- `email` is present and is a valid email address.
-- `email` is normalised before the controller processes it.
-- `password` is present and between 8 and 128 characters.
-- `role` is present and is either `client` or `freelancer`.
-- The role is converted to lower case before it reaches the controller.
-
-The API intentionally does not allow a public registration request to create an `admin` user. This prevents privilege assignment through manipulated request data.
-
-### Login validation
-
-`POST /api/auth/login` checks that:
-
-- `email` is present and valid.
-- `password` is present.
-
-### Validation error format
-
-Invalid input receives HTTP `400 Bad Request` with a consistent JSON response:
+Response:
 
 ```json
 {
-  "error": "validation failed",
-  "details": [
+  "totalIncome": 370.5,
+  "transactionCount": 2,
+  "transactions": [
     {
-      "field": "email",
-      "message": "email must be valid"
+      "_id": "...",
+      "booking": "...",
+      "gig": { "title": "Copy editing", "category": "Writing" },
+      "amount": 120.5,
+      "status": "confirmed",
+      "createdAt": "2026-10-09T10:00:00.000Z"
     }
   ]
 }
 ```
 
-Validation runs before the authentication controller, so invalid data is rejected before registration or login business logic executes.
+The React page is at `/income` and is opened with the View Income button on My Gigs.
 
-## 2. Files added/updated
+Files: `controllers/incomeController.js`, `routes/incomeRoutes.js`, `frontend/src/api/incomeApi.js`, `frontend/src/pages/IncomePage.jsx`.
 
-- Added `middleware/validation.js`
-- Updated `routes/authRoutes.js` to apply validation to register and login
-- Added `postman/HustleHub_API.postman_collection.json`
-- Added this `MEMBER4_TESTING.md` testing and demonstration guide
-- Added `screenshots/` as the recommended location for evidence screenshots
+## 2. API tests (Postman and Newman)
 
-## 3. Postman test collection
+The collection is `postman/HustleHub_API.postman_collection.json`.
 
-Import:
+| Folder | Requests | What it checks |
+|---|---|---|
+| 00 Setup | 1 | health check, creates the unique emails for the run |
+| 01 Auth | 16 | register, duplicate email, admin role refused, login, token contents, wrong password, validation, protected route with bad tokens |
+| 02 Gigs | 21 | create, update, delete, validation, role checks, other freelancers cannot touch a gig, inactive gigs hidden |
+| 03 Bookings | 13 | booking creates a transaction, price cannot be set by the client, role checks, each side only sees its own bookings |
+| 04 Income | 7 | totals match the bookings, other freelancers and clients are blocked, income kept after a gig is deleted |
+| 05 Security | 9 | security headers, CORS, malformed JSON, oversized body, operator injection, script in a gig |
+| 06 Rate limits | 3 | booking, login and registration each end in a 429 with a message and Retry-After |
 
-`postman/HustleHub_API.postman_collection.json`
+Every request also runs two collection level checks: the response is JSON, and it does not contain internal details such as stack traces or password hashes.
 
-The collection contains the following tests in order:
+### Run with Newman
 
-1. Health check
-2. Successful registration
-3. Duplicate email registration
-4. Successful login and JWT capture
-5. Wrong password
-6. Missing required registration fields
-7. Invalid email
-8. Invalid/unsafe role
-9. Malformed JSON
-10. Protected route with a valid JWT
-11. Protected route without a JWT
-
-The successful registration request automatically generates a unique email address and stores it as `{{testEmail}}`. The successful login request captures the returned JWT as `{{token}}` for the protected-route test.
-
-## 4. How to run the API
-
-1. The provided submission ZIP already includes a local `.env` file with a generated JWT secret. Do not show this file in screenshots or the demo video.
-2. Install dependencies:
+MongoDB must be running. From the repository root:
 
 ```bash
 npm install
+npm run test:api
 ```
 
-3. Start the API:
+The script (`postman/runNewman.js`) installs Newman into `postman/`, starts the API on port 5055 against a separate test database, runs the collection and removes the test database again. It exits with code 0 only when every assertion passes.
+
+Settings you can change with environment variables:
+
+| Variable | Default |
+|---|---|
+| `TEST_PORT` | `5055` |
+| `TEST_MONGO_URI` | `MONGO_URI` from `.env` with `_test` added to the database name, or `mongodb://127.0.0.1:27017/hustlehub_test` |
+
+Reports are written to `postman/reports/`:
+
+- `newman-cli.txt` is the console output
+- `newman-junit.xml` is the same run as JUnit XML
+
+### Run in the Postman app
+
+1. Import the collection.
+2. Settings, General, turn off SSL certificate verification (self signed certificate).
+3. Start the API, then run the collection from the top.
+
+Restart the API before every run. Registration is limited to 5 requests per hour and failed logins to 10 per 15 minutes, and the collection uses those limits up on purpose.
+
+## 3. React tests
+
+Vitest with React Testing Library. From the repository root:
 
 ```bash
-npm start
+cd frontend
+npm install
+npm test
 ```
 
-4. `npm start` automatically generates the local HTTPS certificate if it is missing.
-5. Confirm the server reports:
+`npm run test:watch` keeps the runner open while you edit.
 
-`server running on https://localhost:5000`
+| File | What it covers |
+|---|---|
+| `LoginPage.test.jsx` | form, submitted values, redirect by role, server and fallback errors, show/hide password, locked button |
+| `RegisterPage.test.jsx` | role choice, mismatched passwords, 72 byte limit, server error, redirect with message |
+| `ProtectedRoute.test.jsx` | loading state, redirect to login, 403 for the wrong role, allowed role |
+| `GigCard.test.jsx`, `GigForm.test.jsx` | gig details, edit and delete callbacks, numeric payload, edit mode, cancel, busy state |
+| `ClientHomePage.test.jsx` | gig list, empty and error states, details dialog, booking success and failure, bookings list, log out |
+| `MyGigsPage.test.jsx` | gigs and bookings, create, validation details, delete with confirmation, 403 message, link to income |
+| `IncomePage.test.jsx` | total, count and average, rows, deleted gig label, empty and error states, navigation |
+| `api.test.js` | token header, session cleared on a 401 with a token, no reaction to a failed login |
+| `AuthContext.test.jsx` | restoring a session, dropping a rejected token, login, logout |
 
-Because the local server uses a self-signed certificate, Postman may reject it by default. In Postman, open **Settings > General** and switch **SSL certificate verification** off for the local demonstration if necessary.
+To save the output as evidence (Command Prompt, run from `frontend/`):
 
-## 5. Required evidence screenshots
+```bat
+set NO_COLOR=1
+npm test -- --reporter=verbose > reports\vitest-verbose.txt
+```
 
-Capture the Postman request and response for each of these scenarios and save the images in `screenshots/`:
+## 4. Screenshots for the submission
 
-- `01-health-check.png`
-- `02-register-success.png`
-- `03-duplicate-email.png`
-- `04-login-success-jwt.png`
-- `05-wrong-password.png`
-- `06-missing-fields.png`
-- `07-invalid-email.png`
-- `08-invalid-role.png`
-- `09-malformed-json.png`
-- `10-protected-route-valid-jwt.png`
-- `11-protected-route-no-jwt.png`
+Save these in `screenshots/` and keep the `.env` file out of every shot.
 
-For every screenshot, make sure the following are visible where possible:
+- `01-register.png` registration form for a freelancer
+- `02-login-error.png` login with an error message
+- `03-create-gig.png` freelancer creating a gig
+- `04-my-gigs.png` freelancer gig list
+- `05-browse-gigs.png` client browsing gigs
+- `06-booking-confirmed.png` booking confirmation with the transaction id
+- `07-client-bookings.png` client booking list
+- `08-freelancer-bookings.png` freelancer bookings with transaction details
+- `09-income.png` income page
+- `10-validation-error.png` invalid input handled on a form
+- `11-access-denied.png` freelancer opening the client page
+- `20-newman-run.png` Newman summary table
+- `21-newman-rate-limits.png` Newman rate limit folder
+- `22-frontend-tests.png` Vitest summary
 
-- HTTP method and endpoint
-- Request body or Authorization header
-- HTTP response status
-- JSON response body
+## 5. Demo video
 
-Do not expose the real `.env` file or `JWT_SECRET` in screenshots or the demo video.
+One take, about five minutes.
 
-## 6. Demo video script
+1. Show the repository and start the API and the frontend.
+2. Register a freelancer, then log in.
+3. Create a gig and show it in My Gigs. Edit it once.
+4. Log out, register a client, log in.
+5. Browse gigs, open the details and book one. Point out the booking and transaction ids.
+6. Open My Bookings and show the booking and its transaction status.
+7. Log out, log in as the freelancer and show the booking under Client Bookings.
+8. Open View Income and show the total.
+9. Briefly show a refused action (the client page as a freelancer) and a validation message.
+10. Run `npm run test:api` and `npm test` in the frontend and show both finishing green.
 
-A short demo can follow this order:
+## 6. Submission checklist
 
-1. Show the project briefly and point out `middleware/validation.js`.
-2. Start the API and show that it is running over `https://localhost:5000`.
-3. In Postman, run the Health Check request.
-4. Run Register - Happy Path and show the `201` response.
-5. Run Register - Duplicate Email and show that the duplicate is rejected.
-6. Run Register - Missing Fields or Invalid Email and show the `400` validation response.
-7. Run Login - Happy Path and point out the JWT returned in the response.
-8. Run Login - Wrong Password and show the `401` response.
-9. Run Protected Route - Valid JWT and show the authenticated user payload.
-10. Run Protected Route - Missing JWT and show the `401` response.
-11. Briefly state that malformed JSON is also tested and that error responses do not expose stack traces.
-
-## 7. Submission checklist
-
-Before uploading the final project bundle:
-
-- Confirm `.env` is not committed.
-- Confirm the JWT secret is not present in any screenshot or source file.
-- Confirm `node_modules/` is not included in Git.
-- Confirm all Postman tests pass in the required order.
-- Confirm screenshots are readable.
-- Confirm the demo video shows registration, validation, login, the returned JWT, and a protected route.
-- Confirm the architecture diagram and README are included by the integration/submission owner.
-- Confirm all group branches have been merged and the final version runs from a clean checkout.
+- `.env` and `certs/` are not committed
+- `npm run test:api` passes from a clean checkout and `postman/reports/` is committed
+- `npm test` passes in `frontend/`
+- screenshots are readable and named as above
+- README has the income, testing and run instructions
+- video link is added to the README and to the ARC submission
+- everyone's branches are merged and the final version runs from a clean checkout

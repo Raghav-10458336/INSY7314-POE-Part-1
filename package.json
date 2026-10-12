@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "certs": "node generateCert.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:api",
+    "test:api": "cd postman && npm install --no-audit --no-fund && npm test",
     "prestart": "node ensureSetup.js",
     "setup": "node ensureSetup.js"
   },
