@@ -11,6 +11,7 @@ const connectDB = require('./config/db')
 const authRoutes = require('./routes/authRoutes')
 const gigRoutes = require('./routes/gigRoutes')
 const bookingRoutes = require('./routes/bookingRoutes')
+const incomeRoutes = require('./routes/incomeRoutes')
 const errorHandler = require('./middleware/errorHandler')
 const {
     apiLimiter,
@@ -86,6 +87,7 @@ app.use('/api/auth/register', registerLimiter)
 app.use('/api/auth', authRoutes)
 app.use('/api/gigs', gigRoutes)
 app.use('/api/bookings', bookingRoutes)
+app.use('/api/income', incomeRoutes)
 
 // Handle requests to unknown endpoints.
 app.use((req, res) => {
