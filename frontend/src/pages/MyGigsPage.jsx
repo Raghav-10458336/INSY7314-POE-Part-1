@@ -188,6 +188,13 @@ function MyGigsPage() {
                     Create and manage the services you offer to clients.
                 </p>
 
+                <button
+                    type="button"
+                    onClick={() => navigate('/income')}
+                >
+                    View Income
+                </button>
+
                 {/* Logout functionality for authenticated freelancers. */}
                 <button
                     type="button"

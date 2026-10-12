@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ClientHomePage from './pages/ClientHomePage'
 import MyGigsPage from './pages/MyGigsPage'
+import IncomePage from './pages/IncomePage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 // Direct authenticated users to their appropriate dashboard.
@@ -51,6 +52,15 @@ function App() {
                     element={
                         <ProtectedRoute allowedRoles={['freelancer']}>
                             <MyGigsPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/income"
+                    element={
+                        <ProtectedRoute allowedRoles={['freelancer']}>
+                            <IncomePage />
                         </ProtectedRoute>
                     }
                 />
