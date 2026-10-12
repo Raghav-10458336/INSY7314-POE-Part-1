@@ -423,6 +423,61 @@ postman/HustleHub_API.postman_collection.json
 
 ---
 
+# Part 2 - Overview
+
+The Part 2 implementation extends the secure backend from Part 1 into a full-stack MERN application. Freelancers publish gigs, clients browse and book them, every booking creates a transaction, and freelancers can track the income they earn from their bookings.
+
+The application provides the following features:
+
+- **Accounts:** Registration and login for clients and freelancers, with JWT authentication.
+- **Gig management:** Freelancers create, view, update and delete their own gigs.
+- **Browsing:** Clients browse the active gigs offered by freelancers.
+- **Bookings:** Clients book a gig and receive a simulated confirmation. No real payment is taken.
+- **Transactions:** A transaction record is created automatically for every booking and linked to the client and the freelancer.
+- **Income tracking:** Freelancers see the income they earn from their confirmed transactions.
+- **Security:** HTTPS, role-based access control, input validation and sanitisation, rate limiting, security headers with a Content Security Policy, restricted CORS and controlled error responses.
+- **Testing:** Postman and Newman API tests and Vitest frontend tests.
+
+The work was divided between four members. Each of the following sections describes one member's contribution.
+
+| Section | Responsibility |
+|---|---|
+| Member 1 | MongoDB setup and gig management |
+| Member 2 | Authentication, role-based access control and security |
+| Member 3 | Browsing, bookings and transactions |
+| Member 4 | Income tracking, testing and demonstration |
+
+## Technology and Data Models
+
+The backend uses Node.js, Express and MongoDB with Mongoose. The frontend uses React with Vite.
+
+| Model | Main fields |
+|---|---|
+| User | Name, email, hashed password and role (client or freelancer) |
+| Gig | Title, description, category, price, delivery days, freelancer and active status |
+| Booking | Gig, client, freelancer, amount and status |
+| Transaction | Booking, gig, client, freelancer, amount and status |
+
+## API Endpoints
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `GET /health` | Public | Health check |
+| `POST /api/auth/register` | Public | Creates a client or freelancer account |
+| `POST /api/auth/login` | Public | Logs in and returns a JWT |
+| `GET /api/auth/me` | Any signed-in user | Returns the authenticated user |
+| `GET /api/gigs` | Public | Lists active gigs |
+| `GET /api/gigs/my` | Freelancer | Lists the freelancer's own gigs |
+| `POST /api/gigs` | Freelancer | Creates a gig |
+| `PUT /api/gigs/:id` | Freelancer who owns the gig | Updates a gig |
+| `DELETE /api/gigs/:id` | Freelancer who owns the gig | Deletes a gig |
+| `POST /api/bookings` | Client | Books a gig and creates its transaction |
+| `GET /api/bookings/my` | Client | Lists the client's bookings |
+| `GET /api/bookings/freelancer` | Freelancer | Lists the bookings made for the freelancer's gigs |
+| `GET /api/income` | Freelancer | Returns income from confirmed transactions |
+
+---
+
 # Part 2 — Member 2: Authentication & Security
 
 **Team Member:** Raghav Maharaj  
