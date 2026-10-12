@@ -4,7 +4,7 @@ HustleHub+ API Tests
 
 □ 00 Setup
 └ Health check (200)
-  GET https://localhost:5055/health [200 OK, 860B, 14ms]
+  GET https://localhost:5055/health [200 OK, 860B, 15ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -26,7 +26,7 @@ HustleHub+ API Tests
   √  Account is created without exposing the password
 
 └ Register client (201)
-  POST https://localhost:5055/api/auth/register [201 Created, 1.22kB, 54ms]
+  POST https://localhost:5055/api/auth/register [201 Created, 1.22kB, 52ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
@@ -40,14 +40,14 @@ HustleHub+ API Tests
   √  A message explains the problem
 
 └ Admin role cannot be requested at sign up (400)
-  POST https://localhost:5055/api/auth/register [400 Bad Request, 1.18kB, 4ms]
+  POST https://localhost:5055/api/auth/register [400 Bad Request, 1.18kB, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
   √  Validation details name the role field
 
 └ Log in freelancer A (200)
-  POST https://localhost:5055/api/auth/login [200 OK, 1.3kB, 54ms]
+  POST https://localhost:5055/api/auth/login [200 OK, 1.3kB, 53ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -56,7 +56,7 @@ HustleHub+ API Tests
   √  Token expires within the hour
 
 └ Log in freelancer B (200)
-  POST https://localhost:5055/api/auth/login [200 OK, 1.3kB, 52ms]
+  POST https://localhost:5055/api/auth/login [200 OK, 1.3kB, 55ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -65,7 +65,7 @@ HustleHub+ API Tests
   √  Token expires within the hour
 
 └ Log in client (200)
-  POST https://localhost:5055/api/auth/login [200 OK, 1.3kB, 51ms]
+  POST https://localhost:5055/api/auth/login [200 OK, 1.3kB, 54ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -74,14 +74,14 @@ HustleHub+ API Tests
   √  Token expires within the hour
 
 └ Wrong password is rejected (401)
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 53ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 51ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
   √  Error message is "invalid email or password"
 
 └ Unknown email gets the same answer as a wrong password (401)
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 4ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
@@ -95,35 +95,35 @@ HustleHub+ API Tests
   √  Validation details name the password field
 
 └ Login with an invalid email is rejected (400)
-  POST https://localhost:5055/api/auth/login [400 Bad Request, 1.17kB, 2ms]
+  POST https://localhost:5055/api/auth/login [400 Bad Request, 1.17kB, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
   √  Validation details name the email field
 
 └ Current user with a valid token (200)
-  GET https://localhost:5055/api/auth/me [200 OK, 1.07kB, 5ms]
+  GET https://localhost:5055/api/auth/me [200 OK, 1.07kB, 7ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  The token owner is returned
 
 └ Current user without a token (401)
-  GET https://localhost:5055/api/auth/me [401 Unauthorized, 992B, 1ms]
+  GET https://localhost:5055/api/auth/me [401 Unauthorized, 992B, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
   √  Error message is "unauthorized"
 
 └ Tampered token is rejected (401)
-  GET https://localhost:5055/api/auth/me [401 Unauthorized, 992B, 2ms]
+  GET https://localhost:5055/api/auth/me [401 Unauthorized, 992B, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
   √  Error message is "unauthorized"
 
 └ Wrong authorization scheme is rejected (401)
-  GET https://localhost:5055/api/auth/me [401 Unauthorized, 992B, 2ms]
+  GET https://localhost:5055/api/auth/me [401 Unauthorized, 992B, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
@@ -131,14 +131,14 @@ HustleHub+ API Tests
 
 □ 02 Gigs
 └ Freelancer A creates a gig (201)
-  POST https://localhost:5055/api/gigs [201 Created, 1.32kB, 6ms]
+  POST https://localhost:5055/api/gigs [201 Created, 1.32kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
   √  Gig is stored and owned by the token holder
 
 └ Freelancer A creates a second gig (201)
-  POST https://localhost:5055/api/gigs [201 Created, 1.33kB, 4ms]
+  POST https://localhost:5055/api/gigs [201 Created, 1.33kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
@@ -151,41 +151,41 @@ HustleHub+ API Tests
   √  Gig is saved as inactive
 
 └ Negative price is rejected (400)
-  POST https://localhost:5055/api/gigs [400 Bad Request, 1.09kB, 3ms]
+  POST https://localhost:5055/api/gigs [400 Bad Request, 1.09kB, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
   √  Validation details name the price field
 
 └ Missing title is rejected (400)
-  POST https://localhost:5055/api/gigs [400 Bad Request, 1.06kB, 3ms]
+  POST https://localhost:5055/api/gigs [400 Bad Request, 1.06kB, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
   √  Validation details name the title field
 
 └ Extra owner field is rejected (400)
-  POST https://localhost:5055/api/gigs [400 Bad Request, 1.06kB, 5ms]
+  POST https://localhost:5055/api/gigs [400 Bad Request, 1.06kB, 10ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
 
 └ Client cannot create a gig (403)
-  POST https://localhost:5055/api/gigs [403 Forbidden, 986B, 3ms]
+  POST https://localhost:5055/api/gigs [403 Forbidden, 986B, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
   √  Error message is "forbidden"
 
 └ Creating a gig without a token is rejected (401)
-  POST https://localhost:5055/api/gigs [401 Unauthorized, 992B, 2ms]
+  POST https://localhost:5055/api/gigs [401 Unauthorized, 992B, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
   √  Error message is "unauthorized"
 
 └ Public list shows active gigs only (200)
-  GET https://localhost:5055/api/gigs [200 OK, 1.61kB, 4ms]
+  GET https://localhost:5055/api/gigs [200 OK, 1.61kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -193,84 +193,97 @@ HustleHub+ API Tests
   √  The inactive gig is hidden
 
 └ Freelancer A sees all of their own gigs (200)
-  GET https://localhost:5055/api/gigs/my [200 OK, 1.92kB, 6ms]
+  GET https://localhost:5055/api/gigs/my [200 OK, 1.92kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  Active and inactive gigs are included
 
 └ Freelancer B has no gigs of their own (200)
-  GET https://localhost:5055/api/gigs/my [200 OK, 979B, 4ms]
+  GET https://localhost:5055/api/gigs/my [200 OK, 979B, 12ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  Other freelancers gigs are not included
 
 └ Client cannot list freelancer gigs (403)
-  GET https://localhost:5055/api/gigs/my [403 Forbidden, 986B, 3ms]
+  GET https://localhost:5055/api/gigs/my [403 Forbidden, 986B, 7ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
 
 └ Freelancer A updates their gig (200)
-  PUT https://localhost:5055/api/gigs/6accc581dbb1b009e03ce215 [200 OK, 1.31kB, 8ms]
+  PUT https://localhost:5055/api/gigs/6acccce1b49aee55d4d735a2 [200 OK, 1.31kB, 16ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  The change is returned
 
 └ Freelancer B cannot update freelancer A gig (404)
-  PUT https://localhost:5055/api/gigs/6accc581dbb1b009e03ce215 [404 Not Found, 1.01kB, 6ms]
+  PUT https://localhost:5055/api/gigs/6acccce1b49aee55d4d735a2 [404 Not Found, 1.01kB, 7ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403 or 404
 
 └ Freelancer B cannot delete freelancer A gig (404)
-  DELETE https://localhost:5055/api/gigs/6accc581dbb1b009e03ce215 [404 Not Found, 1.01kB, 6ms]
+  DELETE https://localhost:5055/api/gigs/6acccce1b49aee55d4d735a2 [404 Not Found, 1.01kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403 or 404
 
 └ Client cannot update a gig (403)
-  PUT https://localhost:5055/api/gigs/6accc581dbb1b009e03ce215 [403 Forbidden, 986B, 4ms]
+  PUT https://localhost:5055/api/gigs/6acccce1b49aee55d4d735a2 [403 Forbidden, 986B, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
 
 └ Gig is unchanged after the blocked attempts (200)
-  GET https://localhost:5055/api/gigs [200 OK, 1.61kB, 3ms]
+  GET https://localhost:5055/api/gigs [200 OK, 1.61kB, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  Gig still exists with the owner changes only
 
 └ Malformed gig id is rejected (400)
-  PUT https://localhost:5055/api/gigs/not-a-valid-id [400 Bad Request, 994B, 4ms]
+  PUT https://localhost:5055/api/gigs/not-a-valid-id [400 Bad Request, 994B, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
 
 └ Freelancer A creates a temporary gig (201)
-  POST https://localhost:5055/api/gigs [201 Created, 1.31kB, 6ms]
+  POST https://localhost:5055/api/gigs [201 Created, 1.31kB, 9ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
 
 └ Freelancer A deletes the temporary gig (200)
-  DELETE https://localhost:5055/api/gigs/6accc583dbb1b009e03ce218 [200 OK, 996B, 4ms]
+  DELETE https://localhost:5055/api/gigs/6acccce3b49aee55d4d735a5 [200 OK, 996B, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
 
 └ Deleting the same gig again finds nothing (404)
-  DELETE https://localhost:5055/api/gigs/6accc583dbb1b009e03ce218 [404 Not Found, 1.01kB, 4ms]
+  DELETE https://localhost:5055/api/gigs/6acccce3b49aee55d4d735a5 [404 Not Found, 1.01kB, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 404
 
+└ Punctuation is stored as typed (201)
+  POST https://localhost:5055/api/gigs [201 Created, 1.36kB, 5ms]
+  √  Response is JSON
+  √  No internal details in the response
+  √  Status is 201
+  √  Characters such as & ' " and / are kept as typed
+
+└ Punctuation gig is removed again (200)
+  DELETE https://localhost:5055/api/gigs/6acccce3b49aee55d4d735a6 [200 OK, 996B, 8ms]
+  √  Response is JSON
+  √  No internal details in the response
+  √  Status is 200
+
 □ 03 Bookings
 └ Client books the first gig (201)
-  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 7ms]
+  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 11ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
@@ -278,26 +291,26 @@ HustleHub+ API Tests
   √  A confirmed transaction is created for the booking
 
 └ Client books the second gig (201)
-  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 7ms]
+  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 9ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
   √  Amount is 120.5 and a transaction exists
 
 └ Price in the request body is rejected (400)
-  POST https://localhost:5055/api/bookings [400 Bad Request, 1.17kB, 3ms]
+  POST https://localhost:5055/api/bookings [400 Bad Request, 1.17kB, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
 
 └ Malformed gig id is rejected (400)
-  POST https://localhost:5055/api/bookings [400 Bad Request, 1.1kB, 5ms]
+  POST https://localhost:5055/api/bookings [400 Bad Request, 1.1kB, 4ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
 
 └ Unknown gig cannot be booked (404)
-  POST https://localhost:5055/api/bookings [404 Not Found, 1.11kB, 4ms]
+  POST https://localhost:5055/api/bookings [404 Not Found, 1.11kB, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 404
@@ -309,20 +322,20 @@ HustleHub+ API Tests
   √  Status is 404
 
 └ Freelancer cannot book a gig (403)
-  POST https://localhost:5055/api/bookings [403 Forbidden, 986B, 4ms]
+  POST https://localhost:5055/api/bookings [403 Forbidden, 986B, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
   √  Error message is "forbidden"
 
 └ Booking without a token is rejected (401)
-  POST https://localhost:5055/api/bookings [401 Unauthorized, 992B, 3ms]
+  POST https://localhost:5055/api/bookings [401 Unauthorized, 992B, 2ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 401
 
 └ Client sees their bookings with transactions (200)
-  GET https://localhost:5055/api/bookings/my [200 OK, 2.04kB, 10ms]
+  GET https://localhost:5055/api/bookings/my [200 OK, 2.04kB, 15ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -330,34 +343,34 @@ HustleHub+ API Tests
   √  Every booking points at a confirmed transaction
 
 └ Freelancer A sees bookings for their gigs (200)
-  GET https://localhost:5055/api/bookings/freelancer [200 OK, 1.96kB, 6ms]
+  GET https://localhost:5055/api/bookings/freelancer [200 OK, 1.96kB, 11ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  Both bookings belong to freelancer A
 
 └ Freelancer B sees none of those bookings (200)
-  GET https://localhost:5055/api/bookings/freelancer [200 OK, 983B, 7ms]
+  GET https://localhost:5055/api/bookings/freelancer [200 OK, 983B, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  No bookings leak to another freelancer
 
 └ Client cannot read the freelancer booking list (403)
-  GET https://localhost:5055/api/bookings/freelancer [403 Forbidden, 986B, 3ms]
+  GET https://localhost:5055/api/bookings/freelancer [403 Forbidden, 986B, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
 
 └ Freelancer cannot read the client booking list (403)
-  GET https://localhost:5055/api/bookings/my [403 Forbidden, 986B, 3ms]
+  GET https://localhost:5055/api/bookings/my [403 Forbidden, 986B, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
 
 □ 04 Income
 └ Freelancer A income matches the bookings (200)
-  GET https://localhost:5055/api/income [200 OK, 1.41kB, 6ms]
+  GET https://localhost:5055/api/income [200 OK, 1.41kB, 10ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -366,21 +379,21 @@ HustleHub+ API Tests
   √  Rows carry the gig title and no client details
 
 └ Freelancer B income is separate (200)
-  GET https://localhost:5055/api/income [200 OK, 1.01kB, 5ms]
+  GET https://localhost:5055/api/income [200 OK, 1.01kB, 7ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  Nothing from freelancer A shows up
 
 └ Choosing another freelancer in the query is ignored (200)
-  GET https://localhost:5055/api/income?freelancer=6accc57fdbb1b009e03ce213 [200 OK, 1.41kB, 6ms]
+  GET https://localhost:5055/api/income?freelancer=6accccdfb49aee55d4d735a0 [200 OK, 1.41kB, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
   √  Income is still freelancer A own total
 
 └ Client cannot read income (403)
-  GET https://localhost:5055/api/income [403 Forbidden, 986B, 3ms]
+  GET https://localhost:5055/api/income [403 Forbidden, 986B, 4ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 403
@@ -394,13 +407,13 @@ HustleHub+ API Tests
   √  Error message is "unauthorized"
 
 └ Freelancer A deletes a booked gig (200)
-  DELETE https://localhost:5055/api/gigs/6accc581dbb1b009e03ce216 [200 OK, 996B, 4ms]
+  DELETE https://localhost:5055/api/gigs/6acccce1b49aee55d4d735a3 [200 OK, 996B, 5ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
 
 └ Income is kept after the gig is deleted (200)
-  GET https://localhost:5055/api/income [200 OK, 1.37kB, 6ms]
+  GET https://localhost:5055/api/income [200 OK, 1.37kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -419,7 +432,7 @@ HustleHub+ API Tests
   √  Express is not advertised
 
 └ Approved frontend origin gets CORS headers (200)
-  GET https://localhost:5055/health [200 OK, 912B, 1ms]
+  GET https://localhost:5055/health [200 OK, 912B, 2ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
@@ -433,21 +446,21 @@ HustleHub+ API Tests
   √  Cross origin access is not granted
 
 └ Unknown route returns a plain 404 (404)
-  GET https://localhost:5055/api/does-not-exist [404 Not Found, 986B, 1ms]
+  GET https://localhost:5055/api/does-not-exist [404 Not Found, 986B, 3ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 404
   √  Error message is "not found"
 
 └ Malformed JSON is rejected cleanly (400)
-  POST https://localhost:5055/api/auth/login [400 Bad Request, 882B, 3ms]
+  POST https://localhost:5055/api/auth/login [400 Bad Request, 882B, 4ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 400
   √  Body has an error message only
 
 └ Oversized body is rejected (413)
-  POST https://localhost:5055/api/auth/login [413 Payload Too Large, 890B, 3ms]
+  POST https://localhost:5055/api/auth/login [413 Payload Too Large, 890B, 4ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 413
@@ -459,33 +472,33 @@ HustleHub+ API Tests
   √  Status is 400
 
 └ Script in a gig is not stored as markup (201)
-  POST https://localhost:5055/api/gigs [201 Created, 1.38kB, 5ms]
+  POST https://localhost:5055/api/gigs [201 Created, 1.3kB, 8ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 201
   √  Tags are neutralised before storage
 
 └ Script gig is removed again (200)
-  DELETE https://localhost:5055/api/gigs/6accc585dbb1b009e03ce21d [200 OK, 996B, 4ms]
+  DELETE https://localhost:5055/api/gigs/6acccce6b49aee55d4d735ab [200 OK, 996B, 6ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 200
 
 □ 06 Rate limits
 └ Repeated bookings hit the limit (429)
-  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 6ms]
-  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 5ms]
-  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 5ms]
-  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 5ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 2ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
+  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 7ms]
+  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 8ms]
+  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 9ms]
+  POST https://localhost:5055/api/bookings [201 Created, 1.71kB, 7ms]
   POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 4ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 4ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 5ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 5ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 6ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 6ms]
   POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
-  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 3ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 6ms]
+  POST https://localhost:5055/api/bookings [429 Too Many Requests, 1.17kB, 4ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 429
@@ -493,19 +506,19 @@ HustleHub+ API Tests
   √  Retry-After tells the client how long
 
 └ Repeated failed logins hit the limit (429)
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 50ms]
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 49ms]
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 48ms]
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 49ms]
-  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 49ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 63ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 68ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 64ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 71ms]
+  POST https://localhost:5055/api/auth/login [401 Unauthorized, 1.11kB, 68ms]
+  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 4ms]
+  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 2ms]
+  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 6ms]
   POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 2ms]
   POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 2ms]
-  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 1ms]
   POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 2ms]
-  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 2ms]
-  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 1ms]
-  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 2ms]
-  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 1ms]
+  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 4ms]
+  POST https://localhost:5055/api/auth/login [429 Too Many Requests, 1.17kB, 4ms]
   √  Response is JSON
   √  No internal details in the response
   √  Status is 429
@@ -524,17 +537,17 @@ HustleHub+ API Tests
 ├─────────────────────────┼──────────────────┼──────────────────┤
 │              iterations │                1 │                0 │
 ├─────────────────────────┼──────────────────┼──────────────────┤
-│                requests │               94 │                0 │
+│                requests │               96 │                0 │
 ├─────────────────────────┼──────────────────┼──────────────────┤
-│            test-scripts │              140 │                0 │
+│            test-scripts │              144 │                0 │
 ├─────────────────────────┼──────────────────┼──────────────────┤
 │      prerequest-scripts │                4 │                0 │
 ├─────────────────────────┼──────────────────┼──────────────────┤
-│              assertions │              276 │                0 │
+│              assertions │              283 │                0 │
 ├─────────────────────────┴──────────────────┴──────────────────┤
-│ total run duration: 7.1s                                      │
+│ total run duration: 7.5s                                      │
 ├───────────────────────────────────────────────────────────────┤
-│ total data received: 16.21kB (approx)                         │
+│ total data received: 16.56kB (approx)                         │
 ├───────────────────────────────────────────────────────────────┤
-│ average response time: 10ms [min: 1ms, max: 78ms, s.d.: 16ms] │
+│ average response time: 12ms [min: 2ms, max: 78ms, s.d.: 18ms] │
 └───────────────────────────────────────────────────────────────┘
