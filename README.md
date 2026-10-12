@@ -2,6 +2,8 @@
 # HustleHub+
 Youtube Link : https://youtu.be/AwQ5rBtG09k
 
+Part 2 Youtube Link : https://www.youtube.com/watch?v=MFMNTNQQZnQ
+
 ## Secure Freelance Marketplace Platform
 
 HustleHub+ is a secure web-based freelance marketplace designed to connect clients with freelancers through a controlled and secure digital platform. The system allows freelancers to advertise their services while clients can browse available services and interact with the marketplace.
@@ -1068,7 +1070,7 @@ The following evidence is included with the Part 2 submission.
 | Newman test run | `postman/reports/` |
 | Frontend test run | `frontend/reports/vitest-verbose.txt` |
 | Application screenshots | `screenshots/` |
-| Demonstration video | Link to be added |
+| Demonstration video | https://www.youtube.com/watch?v=MFMNTNQQZnQ |
 
 The testing guide, the list of screenshots and the demonstration script are included in `MEMBER4_TESTING.md`.
 
