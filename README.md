@@ -49,7 +49,7 @@ A Client is expected to use the platform to:
 - Log into the platform.
 - Browse available freelance services.
 - View relevant gig information.
-- Initiate bookings in later versions of the system.
+- Book gigs and view their bookings.
 
 Client actions are restricted according to the permissions assigned to the Client role.
 
@@ -65,7 +65,7 @@ A Freelancer is expected to use the platform to:
 - Log into the platform.
 - Create and manage service listings.
 - View bookings associated with their services.
-- Track income generated through bookings in later versions.
+- Track income generated through bookings.
 - View estimated tax information in the completed system.
 
 Freelancer functionality is protected so that users cannot access or modify resources belonging to other users.
@@ -77,6 +77,8 @@ Freelancer functionality is protected so that users cannot access or modify reso
 Administrators are users responsible for privileged system-level functionality.
 
 The Administrator role exists separately from the Client and Freelancer roles so that administrative functionality can be restricted to authorised users.
+
+In the current Part 2 implementation, public registration only creates Client and Freelancer accounts. Administrator functionality has not been built yet and is planned for a later stage of the project.
 
 Administrative permissions are enforced through role-based access control rather than relying on the frontend to hide functionality. This ensures that a user cannot gain access to administrative functionality simply by manually constructing an API request.
 
@@ -306,6 +308,8 @@ HustleHub+ includes a Postman collection that tests the authentication API and v
 
 The testing collection covers both successful and unsuccessful requests.
 
+The scenarios below are the authentication tests created in Part 1. In Part 2 the collection was expanded to cover gigs, bookings, income, security and rate limiting, and the expanded collection is described in Member 4.2.
+
 The following scenarios are tested:
 
 1. API health check
@@ -415,6 +419,8 @@ The collection can be found in:
 ```text
 postman/HustleHub_API.postman_collection.json
 ```
+
+In Part 2 the collection contains 72 requests and is run with Newman. The details are in Member 4.2.
 
 
 
@@ -815,17 +821,11 @@ The tests focused on authentication, role restrictions, validation, rate limitin
 
 These results demonstrate that authentication and role restrictions are enforced at the API level rather than relying only on frontend navigation.
 
-### Additional Testing Before Final Submission
+### Automated Testing
 
-The following verification activities remain part of the final project testing and integration process:
+Automated API testing with Newman and automated React testing are documented in Member 4.2 and Member 4.3. Integration testing with booking, transaction and income functionality is covered by the Postman collection described in Member 4.2.
 
-- Final Postman collection verification.
-- Newman automated API test execution.
-- React automated testing.
-- Integration testing with booking and transaction functionality.
-- Final end-to-end application verification.
-
-The completed manual tests are documented separately from automated tests that have not yet been confirmed.
+The manual tests in the table above were performed during development. The automated tests repeat the main role, validation, rate limiting and security header scenarios.
 
 ## Member 2.9 Security Considerations
 
