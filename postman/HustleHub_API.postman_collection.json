@@ -3091,6 +3091,436 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "05 Security",
+      "item": [
+        {
+          "name": "Security headers are set (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Content Security Policy restricts resources', function () {",
+                  "    const csp = pm.response.headers.get('Content-Security-Policy')",
+                  "    pm.expect(csp).to.include(\"default-src 'self'\")",
+                  "    pm.expect(csp).to.include(\"object-src 'none'\")",
+                  "    pm.expect(csp).to.include(\"frame-ancestors 'none'\")",
+                  "})",
+                  "pm.test('MIME sniffing is blocked', function () {",
+                  "    pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.eql('nosniff')",
+                  "})",
+                  "pm.test('Strict-Transport-Security is set', function () {",
+                  "    pm.expect(pm.response.headers.get('Strict-Transport-Security')).to.include('max-age')",
+                  "})",
+                  "pm.test('Express is not advertised', function () {",
+                  "    pm.expect(pm.response.headers.has('X-Powered-By')).to.eql(false)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approved frontend origin gets CORS headers (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Origin is echoed back', function () {",
+                  "    pm.expect(pm.response.headers.get('Access-Control-Allow-Origin')).to.eql('http://localhost:5173')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:5173"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unknown origin gets no CORS headers (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Cross origin access is not granted', function () {",
+                  "    pm.expect(pm.response.headers.has('Access-Control-Allow-Origin')).to.eql(false)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "https://evil.example"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unknown route returns a plain 404 (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404)",
+                  "})",
+                  "pm.test('Error message is \"not found\"', function () {",
+                  "    pm.expect(body.error).to.eql('not found')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/does-not-exist",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "does-not-exist"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed JSON is rejected cleanly (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})",
+                  "pm.test('Body has an error message only', function () {",
+                  "    pm.expect(body.error).to.be.a('string')",
+                  "    pm.expect(Object.keys(body)).to.eql(['error'])",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"a@b.co\", \"password\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Oversized body is rejected (413)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.request.body.update({",
+                  "    mode: 'raw',",
+                  "    raw: JSON.stringify({ email: 'a@b.co', password: 'x'.repeat(150000) })",
+                  "})"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 413', function () {",
+                  "    pm.response.to.have.status(413)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Operator injection in login is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": {\"$gt\": \"\"}, \"password\": {\"$gt\": \"\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Script in a gig is not stored as markup (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Tags are neutralised before storage', function () {",
+                  "    pm.expect(body.gig.title).to.not.include('<script')",
+                  "    pm.expect(body.gig.description).to.not.include('<img')",
+                  "})",
+                  "if (body.gig) {",
+                  "    pm.collectionVariables.set('xssGigId', body.gig._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"<script>alert('x')</script>Quick job\",\n  \"description\": \"<img src=x onerror=alert(1)> plus some more text\",\n  \"category\": \"Security\",\n  \"price\": 5,\n  \"deliveryDays\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Script gig is removed again (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{xssGigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{xssGigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
