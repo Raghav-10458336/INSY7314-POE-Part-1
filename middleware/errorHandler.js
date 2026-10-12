@@ -23,6 +23,19 @@ const DEFAULT_MESSAGES = {
 
 // Handle errors consistently without exposing sensitive details.
 function errorHandler(err, req, res, next) {
+    // Handle malformed JSON and oversized request bodies.
+    if (err.type === 'entity.parse.failed') {
+        return res.status(400).json({
+            error: 'invalid request'
+        })
+    }
+
+    if (err.type === 'entity.too.large') {
+        return res.status(413).json({
+            error: 'request too large'
+        })
+    }
+
     // Handle invalid MongoDB ObjectIds and other casting errors.
     if (err.name === 'CastError') {
         return res.status(400).json({
