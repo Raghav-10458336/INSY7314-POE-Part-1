@@ -1,0 +1,76 @@
+
+> frontend@0.0.0 test
+> vitest run --reporter=verbose
+
+
+ RUN  v4.1.11 C:/Users/funis/source/repos/INSY7314-POE-Part-1/frontend
+
+ ✓ src/components/ProtectedRoute.test.jsx > ProtectedRoute > waits while the session is being checked 36ms
+ ✓ src/components/ProtectedRoute.test.jsx > ProtectedRoute > sends visitors who are not signed in to the login page 6ms
+ ✓ src/components/ProtectedRoute.test.jsx > ProtectedRoute > blocks a signed in user with the wrong role 3ms
+ ✓ src/components/ProtectedRoute.test.jsx > ProtectedRoute > shows the page to a user with an allowed role 3ms
+ ✓ src/components/ProtectedRoute.test.jsx > ProtectedRoute > lets any signed in user through when no roles are listed 2ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > starts signed out when there is no stored token 69ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > restores the user from a stored token 19ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > drops a stored token the server no longer accepts 11ms
+ ✓ src/components/GigCard.test.jsx > GigCard > shows the gig details 184ms
+ ✓ src/components/GigCard.test.jsx > GigCard > marks an inactive gig as inactive 13ms
+ ✓ src/components/GigCard.test.jsx > GigCard > passes the gig to the edit and delete handlers 135ms
+ ✓ src/components/GigCard.test.jsx > GigCard > disables both actions while busy 17ms
+ ✓ src/components/GigForm.test.jsx > GigForm > starts empty in create mode 245ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > keeps the token when the server cannot be reached 13ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > shows the total, the count and the average 122ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > shows the sign in form 253ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > greets the client and lists the available gigs 140ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > says so when there are no gigs 32ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > shows the problem when the gigs cannot be loaded 38ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > lists the freelancer gigs and the bookings made on them 331ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > lists every transaction with its booking and amount 206ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > labels a transaction whose gig was deleted 21ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > shows an empty state before the first booking 11ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > shows the message from the server when loading fails 36ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > stores the token and exposes the user after login 249ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > links back to the gigs page 61ms
+ ✓ src/pages/IncomePage.test.jsx > IncomePage > logs out and returns to the login page 46ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > clears the token on logout 77ms
+ ✓ src/context/AuthContext.test.jsx > AuthProvider > does not keep a token when the user lookup after login fails 62ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > opens and closes the details of a gig 273ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > books the selected gig and reloads the bookings 117ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > shows the message from the server when a booking is refused 154ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > lists earlier bookings with their transaction status 26ms
+ ✓ src/pages/ClientHomePage.test.jsx > ClientHomePage > logs out and returns to the login page 44ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > passes the email and password to login 661ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > registers a client by default and sends the trimmed details 1472ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > sends a freelancer to their gigs 657ms
+ ✓ src/components/GigForm.test.jsx > GigForm > submits price and delivery days as numbers 1463ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > creates a gig from the form 1509ms
+ ✓ src/api/api.test.js > api client > sends the stored token as a bearer header 3ms
+ ✓ src/api/api.test.js > api client > sends no authorization header when there is no token 1ms
+ ✓ src/api/api.test.js > api client > clears the session and signals expiry when a signed in request gets 401 4ms
+ ✓ src/api/api.test.js > api client > does not signal expiry for a 401 without a token, such as a failed login 2ms
+ ✓ src/api/api.test.js > api client > keeps the session when the server fails for another reason 1ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > sends a client to their dashboard 604ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > registers a freelancer when that role is chosen 1201ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > shows the message from the server when sign in fails 651ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > shows the validation details when saving fails 1132ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > does not delete a gig unless the freelancer confirms 92ms
+ ✓ src/components/GigForm.test.jsx > GigForm > sends active as false when the box is unticked 1518ms
+ ✓ src/components/GigForm.test.jsx > GigForm > loads the selected gig for editing and can be cancelled 45ms
+ ✓ src/components/GigForm.test.jsx > GigForm > locks the form buttons while saving 8ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > deletes a confirmed gig and reloads the list 94ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > tells a non freelancer that the page is not for them 14ms
+ ✓ src/pages/MyGigsPage.test.jsx > MyGigsPage > opens the income page 46ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > falls back to a general message when the server gives none 634ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > shows and hides the password 110ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > does not call the API when the passwords differ 1268ms
+ ✓ src/pages/LoginPage.test.jsx > LoginPage > locks the button while the request is running 576ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > rejects a password longer than 72 bytes 2848ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > shows the message from the server when registration fails 1183ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > goes to the login page with a confirmation after success 1200ms
+ ✓ src/pages/RegisterPage.test.jsx > RegisterPage > reveals each password field on request 111ms
+
+ Test Files  10 passed (10)
+      Tests  63 passed (63)
+   Start at  18:48:18
+   Duration  42.72s (transform 2.28s, setup 57.03s, import 9.24s, tests 22.18s, environment 262.68s)
+
