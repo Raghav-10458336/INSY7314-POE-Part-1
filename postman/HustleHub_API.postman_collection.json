@@ -903,6 +903,1132 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "02 Gigs",
+      "item": [
+        {
+          "name": "Freelancer A creates a gig (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Gig is stored and owned by the token holder', function () {",
+                  "    pm.expect(body.gig.title).to.eql('Logo design')",
+                  "    pm.expect(body.gig.price).to.eql(250)",
+                  "    pm.expect(body.gig.freelancer).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "})",
+                  "if (body.gig) {",
+                  "    pm.collectionVariables.set('gigId', body.gig._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A creates a second gig (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "if (body.gig) {",
+                  "    pm.collectionVariables.set('gigId2', body.gig._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Copy editing\",\n  \"description\": \"Proofreading and light editing for up to 2000 words\",\n  \"category\": \"Writing\",\n  \"price\": 120.5,\n  \"deliveryDays\": 2,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A creates an inactive gig (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Gig is saved as inactive', function () {",
+                  "    pm.expect(body.gig.active).to.eql(false)",
+                  "})",
+                  "if (body.gig) {",
+                  "    pm.collectionVariables.set('hiddenGigId', body.gig._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hidden draft gig\",\n  \"description\": \"Draft listing that should not be public yet\",\n  \"category\": \"Drafts\",\n  \"price\": 99,\n  \"deliveryDays\": 5,\n  \"active\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Negative price is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})",
+                  "pm.test('Validation details name the price field', function () {",
+                  "    pm.expect(body.details.map(function (d) { return d.field })).to.include('price')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": -5,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Missing title is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})",
+                  "pm.test('Validation details name the title field', function () {",
+                  "    pm.expect(body.details.map(function (d) { return d.field })).to.include('title')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 50,\n  \"deliveryDays\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Extra owner field is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true,\n  \"freelancer\": \"{{freelancerBId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client cannot create a gig (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})",
+                  "pm.test('Error message is \"forbidden\"', function () {",
+                  "    pm.expect(body.error).to.eql('forbidden')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Creating a gig without a token is rejected (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"unauthorized\"', function () {",
+                  "    pm.expect(body.error).to.eql('unauthorized')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Public list shows active gigs only (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "const ids = (body.gigs || []).map(function (g) { return g._id })",
+                  "pm.test('Both active gigs are listed', function () {",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('gigId'))",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('gigId2'))",
+                  "})",
+                  "pm.test('The inactive gig is hidden', function () {",
+                  "    pm.expect(ids).to.not.include(pm.collectionVariables.get('hiddenGigId'))",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A sees all of their own gigs (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Active and inactive gigs are included', function () {",
+                  "    pm.expect(body.count).to.eql(3)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "my"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer B has no gigs of their own (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Other freelancers gigs are not included', function () {",
+                  "    pm.expect(body.count).to.eql(0)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "my"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client cannot list freelancer gigs (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "my"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A updates their gig (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('The change is returned', function () {",
+                  "    pm.expect(body.gig.deliveryDays).to.eql(4)",
+                  "    pm.expect(body.gig.freelancer).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{gigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 4,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer B cannot update freelancer A gig (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([403, 404])",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{gigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerBToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hijacked listing\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer B cannot delete freelancer A gig (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([403, 404])",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{gigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client cannot update a gig (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{gigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Gig is unchanged after the blocked attempts (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "const mine = (body.gigs || []).filter(function (g) { return g._id === pm.collectionVariables.get('gigId') })[0]",
+                  "pm.test('Gig still exists with the owner changes only', function () {",
+                  "    pm.expect(mine).to.be.an('object')",
+                  "    pm.expect(mine.title).to.eql('Logo design')",
+                  "    pm.expect(mine.deliveryDays).to.eql(4)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed gig id is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/not-a-valid-id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "not-a-valid-id"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Logo design\",\n  \"description\": \"Clean logo concept with two rounds of revisions\",\n  \"category\": \"Design\",\n  \"price\": 250,\n  \"deliveryDays\": 3,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A creates a temporary gig (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "if (body.gig) {",
+                  "    pm.collectionVariables.set('tempGigId', body.gig._id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Temporary gig\",\n  \"description\": \"Created only to test deleting a gig\",\n  \"category\": \"Testing\",\n  \"price\": 10,\n  \"deliveryDays\": 1,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A deletes the temporary gig (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{tempGigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{tempGigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deleting the same gig again finds nothing (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{tempGigId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{tempGigId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
