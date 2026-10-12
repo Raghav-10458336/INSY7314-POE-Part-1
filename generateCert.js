@@ -9,7 +9,8 @@ async function generateCertificate() {
 
     const pems = await selfsigned.generate(attrs, {
         days: 365,
-        keySize: 2048
+        keySize: 2048,
+        algorithm: 'sha256'
     })
 
     const certsDir = path.join(__dirname, 'certs')
