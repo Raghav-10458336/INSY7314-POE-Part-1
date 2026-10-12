@@ -2748,6 +2748,349 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "04 Income",
+      "item": [
+        {
+          "name": "Freelancer A income matches the bookings (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Total and count add up', function () {",
+                  "    pm.expect(body.totalIncome).to.eql(370.5)",
+                  "    pm.expect(body.transactionCount).to.eql(2)",
+                  "    pm.expect(body.transactions).to.have.lengthOf(2)",
+                  "})",
+                  "pm.test('Rows point at the real booking and transaction', function () {",
+                  "    const bookingIds = body.transactions.map(function (t) { return t.booking })",
+                  "    const ids = body.transactions.map(function (t) { return t._id })",
+                  "    pm.expect(bookingIds).to.include(pm.collectionVariables.get('bookingId'))",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('transactionId'))",
+                  "})",
+                  "pm.test('Rows carry the gig title and no client details', function () {",
+                  "    body.transactions.forEach(function (t) {",
+                  "        pm.expect(t.gig.title).to.be.a('string')",
+                  "        pm.expect(t).to.not.have.property('client')",
+                  "        pm.expect(t).to.not.have.property('freelancer')",
+                  "    })",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "income"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer B income is separate (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Nothing from freelancer A shows up', function () {",
+                  "    pm.expect(body.totalIncome).to.eql(0)",
+                  "    pm.expect(body.transactionCount).to.eql(0)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "income"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Choosing another freelancer in the query is ignored (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Income is still freelancer A own total', function () {",
+                  "    pm.expect(body.totalIncome).to.eql(370.5)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/income?freelancer={{freelancerBId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "income"
+              ],
+              "query": [
+                {
+                  "key": "freelancer",
+                  "value": "{{freelancerBId}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Client cannot read income (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403)",
+                  "})",
+                  "pm.test('Error message is \"forbidden\"', function () {",
+                  "    pm.expect(body.error).to.eql('forbidden')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "income"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Income without a token is rejected (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"unauthorized\"', function () {",
+                  "    pm.expect(body.error).to.eql('unauthorized')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "income"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Freelancer A deletes a booked gig (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gigs",
+                "{{gigId2}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Income is kept after the gig is deleted (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('Total and count are unchanged', function () {",
+                  "    pm.expect(body.totalIncome).to.eql(370.5)",
+                  "    pm.expect(body.transactionCount).to.eql(2)",
+                  "})",
+                  "pm.test('The removed gig shows up as null', function () {",
+                  "    const removed = body.transactions.filter(function (t) { return t.gig === null })",
+                  "    pm.expect(removed).to.have.lengthOf(1)",
+                  "    pm.expect(removed[0].amount).to.eql(120.5)",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "income"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
