@@ -1,220 +1,1010 @@
 {
   "info": {
     "_postman_id": "98c704c1-49ca-46ac-8b47-d91d9f9e8c1a",
-    "name": "HustleHub+ API - Member 4 Validation & Testing",
-    "description": "INSY7314 POE Part 1 validation and authentication test collection. The API uses a self-signed HTTPS certificate during local development, so disable SSL certificate verification in Postman Settings if required.",
+    "name": "HustleHub+ API Tests",
+    "description": "INSY7314 POE Part 2 API tests covering authentication, gigs, bookings, income, security and rate limits. The API uses a self signed certificate locally, so turn off certificate verification in Postman or run with Newman --insecure. The register limiter allows 5 requests per hour, so restart the API before each run (npm run test:api does this).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    { "key": "baseUrl", "value": "https://localhost:5000" },
-    { "key": "testEmail", "value": "" },
-    { "key": "token", "value": "" }
-  ],
   "item": [
     {
-      "name": "01 - Health Check",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-          "pm.test('API is healthy', function () { pm.expect(pm.response.json().status).to.eql('ok'); });"
-        ] }
-      }]
-    },
-    {
-      "name": "02 - Register - Happy Path",
-      "event": [
+      "name": "00 Setup",
+      "item": [
         {
-          "listen": "prerequest",
-          "script": { "exec": [
-            "const email = `member4.${Date.now()}@example.com`;",
-            "pm.collectionVariables.set('testEmail', email);"
-          ] }
-        },
-        {
-          "listen": "test",
-          "script": { "exec": [
-            "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-            "pm.test('Registration succeeds', function () { pm.expect(pm.response.json().message).to.eql('user registered successfully'); });",
-            "pm.test('Password is not returned', function () { pm.expect(pm.response.text()).to.not.include('password'); });"
-          ] }
+          "name": "Health check (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const runId = Date.now().toString(36)",
+                  "pm.collectionVariables.set('runId', runId)",
+                  "pm.collectionVariables.set('password', 'Hustle#2026pass')",
+                  "pm.collectionVariables.set('freelancerAEmail', 'freya.' + runId + '@example.com')",
+                  "pm.collectionVariables.set('freelancerBEmail', 'ben.' + runId + '@example.com')",
+                  "pm.collectionVariables.set('clientEmail', 'cleo.' + runId + '@example.com')"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('API reports ok', function () {",
+                  "    pm.expect(pm.response.json().status).to.eql('ok')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
         }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Member Four Test\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"client\"\n}"
+      ]
+    },
+    {
+      "name": "01 Auth",
+      "item": [
+        {
+          "name": "Register freelancer A (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Account is created without exposing the password', function () {",
+                  "    pm.expect(body.user.email).to.eql(pm.collectionVariables.get('freelancerAEmail'))",
+                  "    pm.expect(body.user.role).to.eql('freelancer')",
+                  "    pm.expect(body.user).to.not.have.property('password')",
+                  "})",
+                  "if (body.user) {",
+                  "    pm.collectionVariables.set('freelancerAId', body.user.id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Freya Alpha\",\n  \"email\": \"{{freelancerAEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"freelancer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
         },
-        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+        {
+          "name": "Register freelancer B (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Account is created without exposing the password', function () {",
+                  "    pm.expect(body.user.email).to.eql(pm.collectionVariables.get('freelancerBEmail'))",
+                  "    pm.expect(body.user.role).to.eql('freelancer')",
+                  "    pm.expect(body.user).to.not.have.property('password')",
+                  "})",
+                  "if (body.user) {",
+                  "    pm.collectionVariables.set('freelancerBId', body.user.id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ben Beta\",\n  \"email\": \"{{freelancerBEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"freelancer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register client (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201)",
+                  "})",
+                  "pm.test('Account is created without exposing the password', function () {",
+                  "    pm.expect(body.user.email).to.eql(pm.collectionVariables.get('clientEmail'))",
+                  "    pm.expect(body.user.role).to.eql('client')",
+                  "    pm.expect(body.user).to.not.have.property('password')",
+                  "})",
+                  "if (body.user) {",
+                  "    pm.collectionVariables.set('clientId', body.user.id)",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cleo Client\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"client\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Duplicate email is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400 or 409', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 409])",
+                  "})",
+                  "pm.test('A message explains the problem', function () {",
+                  "    pm.expect(body.error).to.be.a('string').and.not.empty",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Freya Again\",\n  \"email\": \"{{freelancerAEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"freelancer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin role cannot be requested at sign up (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})",
+                  "pm.test('Validation details name the role field', function () {",
+                  "    pm.expect(body.details.map(function (d) { return d.field })).to.include('role')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mallory Admin\",\n  \"email\": \"mallory.{{runId}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log in freelancer A (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "const decodeBase64 = require('atob')",
+                  "let payload = {}",
+                  "try { payload = JSON.parse(decodeBase64(body.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('A signed token is returned', function () {",
+                  "    pm.expect(body.token).to.be.a('string')",
+                  "    pm.expect(body.token.split('.')).to.have.lengthOf(3)",
+                  "})",
+                  "pm.test('Token carries the user id and role only', function () {",
+                  "    pm.expect(payload.id).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "    pm.expect(payload.role).to.eql('freelancer')",
+                  "    pm.expect(payload).to.not.have.property('password')",
+                  "    pm.expect(payload).to.not.have.property('email')",
+                  "})",
+                  "pm.test('Token expires within the hour', function () {",
+                  "    const left = payload.exp - Math.floor(Date.now() / 1000)",
+                  "    pm.expect(left).to.be.within(1, 3600)",
+                  "})",
+                  "pm.collectionVariables.set('freelancerAToken', body.token)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{freelancerAEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log in freelancer B (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "const decodeBase64 = require('atob')",
+                  "let payload = {}",
+                  "try { payload = JSON.parse(decodeBase64(body.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('A signed token is returned', function () {",
+                  "    pm.expect(body.token).to.be.a('string')",
+                  "    pm.expect(body.token.split('.')).to.have.lengthOf(3)",
+                  "})",
+                  "pm.test('Token carries the user id and role only', function () {",
+                  "    pm.expect(payload.id).to.eql(pm.collectionVariables.get('freelancerBId'))",
+                  "    pm.expect(payload.role).to.eql('freelancer')",
+                  "    pm.expect(payload).to.not.have.property('password')",
+                  "    pm.expect(payload).to.not.have.property('email')",
+                  "})",
+                  "pm.test('Token expires within the hour', function () {",
+                  "    const left = payload.exp - Math.floor(Date.now() / 1000)",
+                  "    pm.expect(left).to.be.within(1, 3600)",
+                  "})",
+                  "pm.collectionVariables.set('freelancerBToken', body.token)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{freelancerBEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log in client (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "const decodeBase64 = require('atob')",
+                  "let payload = {}",
+                  "try { payload = JSON.parse(decodeBase64(body.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('A signed token is returned', function () {",
+                  "    pm.expect(body.token).to.be.a('string')",
+                  "    pm.expect(body.token.split('.')).to.have.lengthOf(3)",
+                  "})",
+                  "pm.test('Token carries the user id and role only', function () {",
+                  "    pm.expect(payload.id).to.eql(pm.collectionVariables.get('clientId'))",
+                  "    pm.expect(payload.role).to.eql('client')",
+                  "    pm.expect(payload).to.not.have.property('password')",
+                  "    pm.expect(payload).to.not.have.property('email')",
+                  "})",
+                  "pm.test('Token expires within the hour', function () {",
+                  "    const left = payload.exp - Math.floor(Date.now() / 1000)",
+                  "    pm.expect(left).to.be.within(1, 3600)",
+                  "})",
+                  "pm.collectionVariables.set('clientToken', body.token)"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Wrong password is rejected (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"invalid email or password\"', function () {",
+                  "    pm.expect(body.error).to.eql('invalid email or password')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{freelancerAEmail}}\",\n  \"password\": \"not-the-password-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unknown email gets the same answer as a wrong password (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"invalid email or password\"', function () {",
+                  "    pm.expect(body.error).to.eql('invalid email or password')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nobody.{{runId}}@example.com\",\n  \"password\": \"not-the-password-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login without a password is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})",
+                  "pm.test('Validation details name the password field', function () {",
+                  "    pm.expect(body.details.map(function (d) { return d.field })).to.include('password')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{freelancerAEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login with an invalid email is rejected (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400)",
+                  "})",
+                  "pm.test('Validation details name the email field', function () {",
+                  "    pm.expect(body.details.map(function (d) { return d.field })).to.include('email')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"whatever-123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Current user with a valid token (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200)",
+                  "})",
+                  "pm.test('The token owner is returned', function () {",
+                  "    pm.expect(body.user.id).to.eql(pm.collectionVariables.get('freelancerAId'))",
+                  "    pm.expect(body.user.role).to.eql('freelancer')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{freelancerAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Current user without a token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"unauthorized\"', function () {",
+                  "    pm.expect(body.error).to.eql('unauthorized')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tampered token is rejected (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"unauthorized\"', function () {",
+                  "    pm.expect(body.error).to.eql('unauthorized')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{freelancerAToken}}tampered"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Wrong authorization scheme is rejected (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body = {}",
+                  "try { body = pm.response.json() } catch (e) {}",
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401)",
+                  "})",
+                  "pm.test('Error message is \"unauthorized\"', function () {",
+                  "    pm.expect(body.error).to.eql('unauthorized')",
+                  "})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{freelancerAToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Response is JSON', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json')",
+          "})",
+          "",
+          "pm.test('No internal details in the response', function () {",
+          "    const text = pm.response.text().toLowerCase()",
+          "    ;['stack', 'node_modules', 'mongoserver', 'mongoose', '$2b$', 'jwt_secret'].forEach(function (word) {",
+          "        pm.expect(text).to.not.include(word)",
+          "    })",
+          "})"
+        ]
       }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5000"
     },
     {
-      "name": "03 - Register - Duplicate Email",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Duplicate Test\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"client\"\n}"
-        },
-        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
-          "pm.test('Duplicate email is rejected', function () { pm.expect(pm.response.json().error).to.eql('email already registered'); });"
-        ] }
-      }]
+      "key": "runId",
+      "value": ""
     },
     {
-      "name": "04 - Login - Happy Path",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPass123!\"\n}"
-        },
-        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-          "const body = pm.response.json();",
-          "pm.test('JWT token is returned', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
-          "if (body.token) { pm.collectionVariables.set('token', body.token); }"
-        ] }
-      }]
+      "key": "password",
+      "value": ""
     },
     {
-      "name": "05 - Login - Wrong Password",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword123!\"\n}"
-        },
-        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 401', function () { pm.response.to.have.status(401); });",
-          "pm.test('Invalid credentials are rejected', function () { pm.expect(pm.response.json().error).to.eql('invalid email or password'); });"
-        ] }
-      }]
+      "key": "freelancerAEmail",
+      "value": ""
     },
     {
-      "name": "06 - Register - Missing Fields",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Incomplete User\"\n}" },
-        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
-          "pm.test('Validation details are returned', function () { const b = pm.response.json(); pm.expect(b.error).to.eql('validation failed'); pm.expect(b.details).to.be.an('array').that.is.not.empty; });"
-        ] }
-      }]
+      "key": "freelancerBEmail",
+      "value": ""
     },
     {
-      "name": "07 - Register - Invalid Email",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Invalid Email\",\n  \"email\": \"not-an-email\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"client\"\n}"
-        },
-        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
-          "pm.test('Email validation fires', function () { const b = pm.response.json(); pm.expect(b.details.some(e => e.field === 'email')).to.eql(true); });"
-        ] }
-      }]
+      "key": "clientEmail",
+      "value": ""
     },
     {
-      "name": "08 - Register - Invalid Role",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Role Test\",\n  \"email\": \"role.test@example.com\",\n  \"password\": \"TestPass123!\",\n  \"role\": \"admin\"\n}"
-        },
-        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
-          "pm.test('Unsafe role is rejected', function () { const b = pm.response.json(); pm.expect(b.details.some(e => e.field === 'role')).to.eql(true); });"
-        ] }
-      }]
+      "key": "freelancerAId",
+      "value": ""
     },
     {
-      "name": "09 - Malformed JSON",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"broken@example.com\",\n  \"password\": \"TestPass123!\",\n}"
-        },
-        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
-          "pm.test('No stack trace is exposed', function () { pm.expect(pm.response.text().toLowerCase()).to.not.include('stack'); });"
-        ] }
-      }]
+      "key": "freelancerBId",
+      "value": ""
     },
     {
-      "name": "10 - Protected Route - Valid JWT",
-      "request": {
-        "method": "GET",
-        "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
-        "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-          "pm.test('Protected route is accessible with JWT', function () { pm.expect(pm.response.json().message).to.eql('protected route accessed successfully'); });"
-        ] }
-      }]
+      "key": "clientId",
+      "value": ""
     },
     {
-      "name": "11 - Protected Route - Missing JWT",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
-      },
-      "event": [{
-        "listen": "test",
-        "script": { "exec": [
-          "pm.test('Status is 401', function () { pm.response.to.have.status(401); });"
-        ] }
-      }]
+      "key": "freelancerAToken",
+      "value": ""
+    },
+    {
+      "key": "freelancerBToken",
+      "value": ""
+    },
+    {
+      "key": "clientToken",
+      "value": ""
+    },
+    {
+      "key": "gigId",
+      "value": ""
+    },
+    {
+      "key": "gigId2",
+      "value": ""
+    },
+    {
+      "key": "hiddenGigId",
+      "value": ""
+    },
+    {
+      "key": "tempGigId",
+      "value": ""
+    },
+    {
+      "key": "xssGigId",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "bookingId2",
+      "value": ""
+    },
+    {
+      "key": "transactionId",
+      "value": ""
     }
   ]
 }
