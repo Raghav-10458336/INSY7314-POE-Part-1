@@ -1101,3 +1101,490 @@ The full local setup steps are described in Member 2.7. The following notes appl
 - **Ports:** If port 5000 is already in use, set `PORT` in `.env` and `VITE_API_URL` in `frontend/.env` to a free port.
 
 ---
+
+# Part 3 - Member 1: Income and Tax Dashboard
+
+**Team Member:** Raghav Mahraj  
+**Student Number:** ST10458336  
+**Responsibility:** Tax estimation, freelancer income dashboard enhancements, financial visualisations, integration testing and frontend quality verification.
+
+## Member 1.1 Overview
+
+The Part 3 implementation extends the existing freelancer income tracking functionality developed in Part 2 by introducing an estimated income tax calculation and a more comprehensive financial dashboard.
+
+The purpose of this enhancement is to help freelancers understand their earnings, view an approximate tax liability and compare their income before and after estimated tax deductions.
+
+The implementation builds on the existing MERN architecture and uses confirmed transaction records as the source of financial information.
+
+The main enhancements include:
+
+- Estimated South African income tax calculations.
+- Tax-year earnings summaries.
+- Estimated after-tax income.
+- Marginal and effective tax rates.
+- Monthly earnings visualisations.
+- Income and estimated tax breakdown charts.
+- Improved financial dashboard styling and responsive layouts.
+- Integration with the existing freelancer income API.
+- Automated testing and frontend quality checks.
+
+The dashboard is available to authenticated freelancers through the **View Income** button on the My Gigs page.
+
+---
+
+## Member 1.2 Tax Estimation Component
+
+A tax estimation component was introduced to calculate approximate South African personal income tax using the 2026/2027 tax-year structure.
+
+The selected tax year runs from **1 March 2026 to 28 February 2027**.
+
+The calculation uses a progressive tax system, meaning different portions of taxable income are subject to different tax rates.
+
+### Tax Calculation Method
+
+The estimated tax calculation follows these steps:
+
+1. Retrieve the authenticated freelancer's confirmed transaction records.
+2. Identify transactions falling within the selected tax year.
+3. Calculate total earnings for that tax year.
+4. Determine the applicable progressive income tax bracket.
+5. Calculate tax using the bracket's base tax amount and marginal rate.
+6. Apply the primary tax rebate.
+7. Prevent the final estimated tax amount from falling below zero.
+8. Subtract estimated tax from tax-year earnings to calculate after-tax income.
+9. Calculate the effective tax rate as a percentage of earnings.
+
+### Progressive Tax Brackets
+
+The component uses the following South African personal income tax brackets for the 2026/2027 tax year.
+
+| Taxable Income | Tax Calculation |
+|---|---|
+| R0 – R245 100 | 18% of taxable income |
+| R245 101 – R383 100 | R44 118 + 26% of income above R245 100 |
+| R383 101 – R530 200 | R79 998 + 31% of income above R383 100 |
+| R530 201 – R695 800 | R125 599 + 36% of income above R530 200 |
+| R695 801 – R887 000 | R185 215 + 39% of income above R695 800 |
+| R887 001 – R1 878 600 | R259 783 + 41% of income above R887 000 |
+| Above R1 878 600 | R666 339 + 45% of income above R1 878 600 |
+
+The calculation also applies the **primary rebate of R17 820** for taxpayers younger than 65.
+
+### Calculation Formula
+
+The general progressive tax calculation is:
+
+```text
+Gross Tax =
+    Base Tax for Bracket
+    + (Taxable Income - Bracket Lower Threshold) × Marginal Rate
+
+Estimated Tax = MAX(0, Gross Tax - Primary Rebate)
+
+After-Tax Income = Tax-Year Earnings - Estimated Tax
+
+Effective Tax Rate =
+    (Estimated Tax / Tax-Year Earnings) × 100
+```
+
+When tax-year earnings are zero, the effective tax rate is treated as zero to avoid division by zero.
+
+### Example Calculation
+
+A freelancer with R300 000 in tax-year earnings falls within the 26% marginal tax bracket.
+
+```text
+Tax-Year Earnings: R300 000.00
+
+Gross Tax:
+R44 118 + (R300 000 - R245 100) × 26%
+
+= R44 118 + R14 274
+= R58 392
+
+Primary Rebate:
+R17 820
+
+Estimated Income Tax:
+R58 392 - R17 820
+= R40 572
+
+Estimated After-Tax Income:
+R300 000 - R40 572
+= R259 428
+
+Effective Tax Rate:
+(R40 572 / R300 000) × 100
+= 13.52%
+```
+
+This example was also verified through the running application using a confirmed test transaction of R300 000.
+
+### Tax Estimation Limitations
+
+The calculation is intended for educational and financial planning purposes only.
+
+It assumes that the freelancer is younger than 65 and that the income recorded by the platform represents the income being assessed.
+
+It does not account for:
+
+- Income earned outside HustleHub+.
+- Business expenses or allowable deductions.
+- Additional tax rebates or medical tax credits.
+- Individual taxpayer circumstances.
+- Other adjustments that may apply under South African tax legislation.
+
+The dashboard includes a disclaimer explaining that the calculation is an estimate and not an official South African Revenue Service (SARS) assessment.
+
+---
+
+## Member 1.3 Backend Income and Tax Integration
+
+The Part 3 functionality extends the existing freelancer income processing implemented during Part 2.
+
+Income information is calculated using transaction records rather than requiring freelancers to enter their earnings manually.
+
+The existing endpoint is:
+
+`GET /api/income`
+
+The endpoint is protected using the application's existing JWT authentication and freelancer role restrictions.
+
+The implementation uses the following principles:
+
+- **Authenticated ownership:** Income information is associated with the freelancer identified by the verified JWT.
+- **Confirmed transactions:** Only confirmed transactions contribute to income totals.
+- **Tax-year filtering:** Transactions are evaluated according to their recorded dates to calculate tax-year earnings.
+- **Consistent financial calculations:** Tax estimates are derived from recorded income rather than independently entered values.
+- **Controlled API responses:** Financial information is returned through the existing backend API structure.
+- **Existing transaction preservation:** Historical income remains associated with transaction records even when the original gig is deleted.
+
+The backend provides the financial information required by the React dashboard, including earnings and tax estimation values.
+
+This approach reuses the existing application architecture and avoids introducing an unnecessary separate financial database.
+
+---
+
+## Member 1.4 React Income and Tax Dashboard
+
+The existing React income page was enhanced to present financial information in a structured and visually appealing format.
+
+The dashboard is accessible through the freelancer workspace at:
+
+`/income`
+
+### Income Summary
+
+The first section displays three summary cards:
+
+| Card | Description |
+|---|---|
+| Total Income | Total income from confirmed transactions |
+| Confirmed Bookings | Number of confirmed transactions contributing to income |
+| Average per Booking | Average income generated per confirmed booking |
+
+These figures provide freelancers with a quick overview of their marketplace earnings.
+
+### Tax-Year Financial Overview
+
+A separate section displays financial information for the 2026/2027 tax year.
+
+| Card | Description |
+|---|---|
+| Tax-Year Earnings | Income recorded during the selected tax year |
+| Estimated Income Tax | Approximate tax calculated using progressive tax brackets |
+| After-Tax Estimate | Earnings remaining after estimated tax |
+| Effective Tax Rate | Estimated tax expressed as a percentage of earnings |
+
+The cards use consistent spacing, typography and visual styling to distinguish important financial values.
+
+Colour accents help differentiate estimated tax from after-tax income.
+
+### Tax Calculation Details
+
+An additional information panel displays:
+
+- Marginal tax rate.
+- Primary tax rebate.
+- Number of confirmed tax-year transactions.
+- Tax estimation disclaimer.
+
+This allows freelancers to understand the figures presented in the dashboard without needing to inspect the underlying calculations.
+
+---
+
+## Member 1.5 Financial Visualisations
+
+Two charts were integrated into the dashboard using the Recharts library.
+
+These visualisations help freelancers interpret their financial information more easily than through numerical summaries alone.
+
+### Monthly Earnings Bar Chart
+
+The Monthly Earnings chart displays confirmed income grouped by month for the selected tax year.
+
+Its purpose is to help freelancers identify when income was generated and compare earnings between months.
+
+The chart includes:
+
+- Monthly income values.
+- A chronological tax-year timeline.
+- Currency-formatted income values.
+- A responsive layout.
+
+Months without confirmed income remain part of the displayed tax-year period.
+
+### Income vs Estimated Tax Doughnut Chart
+
+The second visualisation displays the relationship between estimated tax and after-tax income.
+
+The chart separates tax-year earnings into:
+
+- **After-Tax Income:** Estimated earnings remaining after tax.
+- **Estimated Tax:** Approximate income tax calculated for the tax year.
+
+This provides a visual representation of how much of the freelancer's recorded earnings may be allocated towards income tax.
+
+The chart uses contrasting colours and a legend to distinguish the two values.
+
+### Chart Implementation
+
+Recharts was installed as a frontend dependency and integrated into the React income page.
+
+The charts use financial data from the application's existing income processing rather than relying on hard-coded demonstration values.
+
+---
+
+## Member 1.6 Dashboard Styling and Responsiveness
+
+The dashboard styling was improved to provide a more professional and consistent user interface.
+
+The enhancements include:
+
+- Consistent financial summary cards.
+- Improved typography and currency formatting.
+- Responsive grid layouts.
+- Styled navigation buttons.
+- Distinct visual accents for tax-related information.
+- Improved tax calculation details.
+- Responsive chart containers.
+- Improved transaction history table.
+- Consistent spacing, borders and shadows.
+- Layout adjustments for smaller screens.
+
+Currency values are displayed using South African Rand formatting.
+
+For example:
+
+```text
+R300 000,00
+R40 572,00
+R259 428,00
+```
+
+The financial dashboard retains the existing application colour scheme while introducing visual distinctions between income, tax and after-tax values.
+
+---
+
+## Member 1.7 Transaction History
+
+The existing income transaction table remains available below the financial overview and charts.
+
+The table displays:
+
+| Field | Description |
+|---|---|
+| Date | Date of the recorded transaction |
+| Gig | Name and category of the booked service |
+| Booking | Associated booking identifier |
+| Status | Transaction confirmation status |
+| Amount | Recorded transaction amount |
+
+The transaction history provides supporting information for the financial totals displayed above it.
+
+The existing handling of deleted gigs is preserved so that historical transactions remain visible even if their original service listing is no longer available.
+
+The dashboard also retains loading, empty and error states to provide feedback when income information cannot be retrieved.
+
+---
+
+## Member 1.8 Security Considerations
+
+The Part 3 financial dashboard builds on the authentication and authorisation controls implemented in the earlier project stages.
+
+The financial functionality follows these security principles:
+
+### Authentication and Authorisation
+
+The income endpoint requires a valid JWT and is restricted to authenticated freelancers.
+
+Clients and unauthenticated users cannot access protected freelancer income information.
+
+### Financial Data Ownership
+
+Income is associated with the authenticated freelancer rather than accepting an arbitrary freelancer identifier from the frontend.
+
+This reduces the risk of one freelancer requesting another freelancer's financial information.
+
+### Server-Side Financial Calculations
+
+Tax estimation is derived from transaction data processed by the backend.
+
+The frontend displays the calculated information rather than independently determining the freelancer's recorded earnings.
+
+### Data Integrity
+
+Income totals are based on confirmed transaction records generated through the application's booking process.
+
+The financial dashboard therefore uses existing application data instead of allowing users to manually modify recorded transaction amounts.
+
+### Controlled Error Handling
+
+The income functionality continues to use the application's existing error-handling mechanisms.
+
+API errors are displayed through controlled frontend messages without intentionally exposing sensitive server implementation details.
+
+These controls support the defence-in-depth security approach established during Part 1 and Part 2.
+
+---
+
+## Member 1.9 Testing and Verification
+
+The Part 3 implementation was tested to verify financial calculations, dashboard behaviour and compatibility with the existing application.
+
+### Backend Testing
+
+Backend tests were used to verify the tax calculation logic and its integration with freelancer income processing.
+
+The successful test run reported:
+
+```text
+19 tests passed
+0 tests failed
+```
+
+The backend testing covered the tax calculation functionality and income-related controller behaviour.
+
+### Frontend Automated Testing
+
+The React frontend was tested using Vitest and React Testing Library.
+
+The final successful test run reported:
+
+```text
+Test Files  10 passed (10)
+Tests       63 passed (63)
+```
+
+The tests cover the existing application functionality, including authentication, navigation, gig management, bookings and income page behaviour.
+
+The income page tests were updated to remain compatible with the enhanced dashboard and its financial formatting.
+
+### ESLint Verification
+
+Frontend static analysis was performed using ESLint.
+
+Command:
+
+```powershell
+cd frontend
+npm.cmd run lint
+```
+
+The final run completed successfully with no reported lint errors.
+
+An existing React state-management lint issue in the gig form was also corrected during frontend verification.
+
+### Production Build Verification
+
+The frontend production build was verified using:
+
+```powershell
+cd frontend
+npm.cmd run build
+```
+
+The build completed successfully using Vite.
+
+The build reported an advisory warning about a JavaScript bundle exceeding the recommended chunk size. This warning did not prevent the production build from completing.
+
+### Manual Integration Testing
+
+The income and tax dashboard was also tested through the running application.
+
+A confirmed transaction of R300 000 was used to verify the displayed values.
+
+| Financial Value | Observed Result |
+|---|---|
+| Total Income | R300 000,00 |
+| Confirmed Bookings | 1 |
+| Tax-Year Earnings | R300 000,00 |
+| Estimated Income Tax | R40 572,00 |
+| After-Tax Estimate | R259 428,00 |
+| Effective Tax Rate | 13.52% |
+| Marginal Tax Rate | 26% |
+| Primary Rebate | R17 820,00 |
+
+The dashboard successfully displayed the financial summary cards, monthly earnings chart, tax breakdown chart, calculation details and transaction history.
+
+These results demonstrate that the tax calculation is integrated with the existing transaction-based income system.
+
+---
+
+## Member 1.10 Main Implementation Files
+
+The following files contain the main Part 3 Member 1 implementation and related frontend changes.
+
+| File | Responsibility |
+|---|---|
+| `controllers/incomeController.js` | Freelancer income processing and tax integration |
+| `routes/incomeRoutes.js` | Protected freelancer income endpoint |
+| `frontend/src/pages/IncomePage.jsx` | Enhanced income and tax dashboard with charts |
+| `frontend/src/pages/IncomePage.css` | Dashboard layout, cards, charts and responsive styling |
+| `frontend/src/pages/IncomePage.test.jsx` | Income dashboard automated tests |
+| `frontend/src/components/GigForm.jsx` | React state-management lint correction |
+| `frontend/package.json` | Recharts dependency and frontend scripts |
+| `frontend/package-lock.json` | Frontend dependency lockfile |
+
+The implementation also includes backend tax calculation logic and its associated automated tests.
+
+---
+
+## Member 1.11 Running and Verifying the Dashboard
+
+The existing application setup instructions are provided in Part 2, Member 2.7.
+
+For Part 3 verification:
+
+1. Start MongoDB.
+2. Start the Express backend.
+3. Start the React frontend.
+4. Register or log in as a freelancer.
+5. Ensure that at least one confirmed booking transaction exists for the freelancer.
+6. Open **My Gigs**.
+7. Select **View Income**.
+8. Verify the income summary, tax calculations, charts and transaction history.
+
+### Frontend Verification Commands
+
+From the `frontend` directory:
+
+```powershell
+npm.cmd test
+npm.cmd run lint
+npm.cmd run build
+```
+
+All three checks completed successfully during Member 1's final local verification.
+
+---
+
+## Member 1.12 Contribution Summary
+
+The Part 3 Member 1 contribution extends HustleHub+ from basic freelancer income tracking into a more comprehensive financial dashboard.
+
+The implementation provides an approximate South African income tax calculation, financial summaries, monthly earnings visualisations, estimated tax comparisons and improved transaction reporting.
+
+The functionality was integrated with the existing authentication, transaction and income systems and verified through automated tests, static analysis, production build checks and manual integration testing.
+
+This contribution satisfies the Part 3 requirement for a tax estimation component with clearly explained calculation logic and a structured, visually appealing freelancer income and tax interface.

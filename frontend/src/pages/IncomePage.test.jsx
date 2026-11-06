@@ -1,3 +1,4 @@
+
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -9,10 +10,14 @@ const mocks = vi.hoisted(() => ({
     logout: vi.fn()
 }))
 
-vi.mock('../api/incomeApi', () => ({ getIncome: mocks.getIncome }))
+vi.mock('../api/incomeApi', () => ({
+    getIncome: mocks.getIncome
+}))
 
 vi.mock('../context/useAuth', () => ({
-    useAuth: () => ({ logout: mocks.logout })
+    useAuth: () => ({
+        logout: mocks.logout
+    })
 }))
 
 const income = {
@@ -22,7 +27,10 @@ const income = {
         {
             _id: 't2',
             booking: 'b2',
-            gig: { title: 'Copy editing', category: 'Writing' },
+            gig: {
+                title: 'Copy editing',
+                category: 'Writing'
+            },
             amount: 120.5,
             status: 'confirmed',
             createdAt: '2026-10-09T10:00:00.000Z'
@@ -60,9 +68,13 @@ describe('IncomePage', () => {
     it('shows the total, the count and the average', async () => {
         renderPage()
 
-        expect(await screen.findByText('R370.50')).toBeInTheDocument()
-        expect(screen.getByText('Confirmed bookings').nextSibling).toHaveTextContent('2')
-        expect(screen.getByText('R185.25')).toBeInTheDocument()
+        expect(await screen.findByText('R370,50')).toBeInTheDocument()
+
+        expect(
+            screen.getByText('Confirmed bookings').nextSibling
+        ).toHaveTextContent('2')
+
+        expect(screen.getByText('R185,25')).toBeInTheDocument()
     })
 
     it('lists every transaction with its booking and amount', async () => {
@@ -72,14 +84,16 @@ describe('IncomePage', () => {
 
         expect(screen.getAllByRole('row')).toHaveLength(3)
         expect(screen.getByText('b2')).toBeInTheDocument()
-        expect(screen.getByText('R120.50')).toBeInTheDocument()
-        expect(screen.getByText('R250.00')).toBeInTheDocument()
+        expect(screen.getByText('R120,50')).toBeInTheDocument()
+        expect(screen.getByText('R250,00')).toBeInTheDocument()
     })
 
     it('labels a transaction whose gig was deleted', async () => {
         renderPage()
 
-        expect(await screen.findByText('Gig removed')).toBeInTheDocument()
+        expect(
+            await screen.findByText('Gig removed')
+        ).toBeInTheDocument()
     })
 
     it('shows an empty state before the first booking', async () => {
@@ -88,34 +102,60 @@ describe('IncomePage', () => {
             transactionCount: 0,
             transactions: []
         })
+
         renderPage()
 
-        expect(await screen.findByText('No income yet')).toBeInTheDocument()
+        expect(
+            await screen.findByText('No income yet')
+        ).toBeInTheDocument()
+
         expect(screen.queryByRole('table')).not.toBeInTheDocument()
     })
 
     it('shows the message from the server when loading fails', async () => {
-        mocks.getIncome.mockRejectedValue({ response: { data: { error: 'forbidden' } } })
+        mocks.getIncome.mockRejectedValue({
+            response: {
+                data: {
+                    error: 'forbidden'
+                }
+            }
+        })
+
         renderPage()
 
-        expect(await screen.findByRole('alert')).toHaveTextContent('forbidden')
-        expect(screen.queryByText('Total income')).not.toBeInTheDocument()
+        expect(
+            await screen.findByRole('alert')
+        ).toHaveTextContent('forbidden')
+
+        expect(
+            screen.queryByText('Total income')
+        ).not.toBeInTheDocument()
     })
 
     it('links back to the gigs page', async () => {
         const user = userEvent.setup()
+
         renderPage()
 
-        await user.click(screen.getByRole('link', { name: 'Back to My Gigs' }))
+        await user.click(
+            screen.getByRole('link', {
+                name: 'Back to My Gigs'
+            })
+        )
 
         expect(screen.getByText('gigs page')).toBeInTheDocument()
     })
 
     it('logs out and returns to the login page', async () => {
         const user = userEvent.setup()
+
         renderPage()
 
-        await user.click(screen.getByRole('button', { name: 'Log Out' }))
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Log Out'
+            })
+        )
 
         expect(mocks.logout).toHaveBeenCalled()
         expect(screen.getByText('login page')).toBeInTheDocument()

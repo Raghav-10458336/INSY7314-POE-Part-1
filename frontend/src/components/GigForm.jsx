@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+
+import { useState } from 'react'
 
 const emptyForm = {
     title: '',
@@ -9,23 +10,23 @@ const emptyForm = {
     active: true
 }
 
-function GigForm({ selectedGig, onSubmit, onCancel, busy }) {
-    const [form, setForm] = useState(emptyForm)
+function getInitialForm(selectedGig) {
+    if (!selectedGig) {
+        return { ...emptyForm }
+    }
 
-    useEffect(() => {
-        if (selectedGig) {
-            setForm({
-                title: selectedGig.title || '',
-                description: selectedGig.description || '',
-                category: selectedGig.category || '',
-                price: selectedGig.price ?? '',
-                deliveryDays: selectedGig.deliveryDays ?? '',
-                active: selectedGig.active ?? true
-            })
-        } else {
-            setForm(emptyForm)
-        }
-    }, [selectedGig])
+    return {
+        title: selectedGig.title || '',
+        description: selectedGig.description || '',
+        category: selectedGig.category || '',
+        price: selectedGig.price ?? '',
+        deliveryDays: selectedGig.deliveryDays ?? '',
+        active: selectedGig.active ?? true
+    }
+}
+
+function GigFormFields({ selectedGig, onSubmit, onCancel, busy }) {
+    const [form, setForm] = useState(() => getInitialForm(selectedGig))
 
     function handleChange(event) {
         const { name, value, type, checked } = event.target
@@ -145,6 +146,20 @@ function GigForm({ selectedGig, onSubmit, onCancel, busy }) {
                 )}
             </div>
         </form>
+    )
+}
+
+function GigForm({ selectedGig, onSubmit, onCancel, busy }) {
+    const formKey = selectedGig?._id ?? 'new-gig'
+
+    return (
+        <GigFormFields
+            key={formKey}
+            selectedGig={selectedGig}
+            onSubmit={onSubmit}
+            onCancel={onCancel}
+            busy={busy}
+        />
     )
 }
 
