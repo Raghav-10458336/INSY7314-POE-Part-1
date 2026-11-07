@@ -1,0 +1,105 @@
+Pipeline run extracts
+
+Taken from the GitHub Actions run pages and job logs of the CI workflow. Only the lines that show
+each check result are kept. Colour codes and box drawing characters were removed.
+
+==============================================================================
+Run 42372024314: Failed run: three CodeQL results were still open
+==============================================================================
+URL:      https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42372024314
+Commit:   b9f7748  fix: repeat tag removal until stable in the gig text sanitiser
+Branch:   part3/ci-pipeline   Event: push   Result: failure
+
+Jobs:
+  Backend unit and API tests         success  28 s
+  CodeQL static analysis             failure  64 s
+  Secret scan                        success  8 s
+  Dependency audit                   success  12 s
+  Frontend lint, tests and build     success  19 s
+  Pipeline gate                      failure  2 s
+
+Backend unit and API tests:
+   tests 19
+   pass 19
+   fail 0
+  |              iterations |                 1 |                0 |
+  |                requests |                96 |                0 |
+  |            test-scripts |               144 |                0 |
+  |      prerequest-scripts |                 4 |                0 |
+  |              assertions |               283 |                0 |
+  | total run duration: 2.5s                                       |
+
+Frontend lint, tests and build:
+   Test Files  10 passed (10)
+        Tests  63 passed (63)
+  ok built in 289ms
+
+Dependency audit:
+  found 0 vulnerabilities
+
+Secret scan:
+  12:20PM INF 3 commits scanned.
+  12:20PM INF no leaks found
+
+CodeQL static analysis:
+  CodeQL scanned 38 out of 38 JavaScript files, 1 out of 1 GitHub Actions files and 1 out of 1 HTML files in this invocation. Check the status page for overall coverage information: https://github.com/Raghav-10458336/INSY7314-POE-Part-1/security/code-scanning/tools/CodeQL/status/
+  Alerts found: 3
+  js/sql-injection  controllers/gigController.js:78  security severity 8.8
+  js/sql-injection  controllers/bookingController.js:17  security severity 8.8
+  js/file-system-race  ensureSetup.js:13  security severity 7.7
+
+Pipeline gate:
+  backend: success
+  frontend: success
+  dependency-audit: success
+  secret-scan: success
+  codeql: failure
+
+==============================================================================
+Run 42373520579: Passed run on part3/main after the pipeline pull request was merged
+==============================================================================
+URL:      https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42373520579
+Commit:   279f135  Merge pull request #13 from Raghav-10458336/part3/ci-pipeline
+Branch:   part3/main   Event: push   Result: success
+
+Jobs:
+  CodeQL static analysis             success  73 s
+  Frontend lint, tests and build     success  21 s
+  Backend unit and API tests         success  32 s
+  Dependency audit                   success  15 s
+  Secret scan                        success  7 s
+  Pipeline gate                      success  3 s
+
+Backend unit and API tests:
+   tests 19
+   pass 19
+   fail 0
+  |              iterations |                 1 |                0 |
+  |                requests |                96 |                0 |
+  |            test-scripts |               144 |                0 |
+  |      prerequest-scripts |                 4 |                0 |
+  |              assertions |               283 |                0 |
+  | total run duration: 2.6s                                       |
+
+Frontend lint, tests and build:
+   Test Files  10 passed (10)
+        Tests  63 passed (63)
+  ok built in 303ms
+
+Dependency audit:
+  found 0 vulnerabilities
+
+Secret scan:
+  12:40PM INF 0 commits scanned.
+  12:40PM INF no leaks found
+
+CodeQL static analysis:
+  CodeQL scanned 38 out of 38 JavaScript files, 1 out of 1 GitHub Actions files and 1 out of 1 HTML files in this invocation. Check the status page for overall coverage information: https://github.com/Raghav-10458336/INSY7314-POE-Part-1/security/code-scanning/tools/CodeQL/status/
+  Alerts found: 0
+
+Pipeline gate:
+  backend: success
+  frontend: success
+  dependency-audit: success
+  secret-scan: success
+  codeql: success

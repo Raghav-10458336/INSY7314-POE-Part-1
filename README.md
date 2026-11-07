@@ -1588,3 +1588,237 @@ The implementation provides an approximate South African income tax calculation,
 The functionality was integrated with the existing authentication, transaction and income systems and verified through automated tests, static analysis, production build checks and manual integration testing.
 
 This contribution satisfies the Part 3 requirement for a tax estimation component with clearly explained calculation logic and a structured, visually appealing freelancer income and tax interface.
+
+---
+
+# Part 3 - CI/CD Pipeline and Static Code Analysis
+
+**Team Member:** Ophec Funis  
+**Student Number:** ST10089492  
+**Responsibility:** The GitHub Actions pipeline, static code analysis, dependency and secret scanning, and the pipeline evidence.
+
+## Pipeline Overview
+
+Part 3 adds a continuous integration pipeline using GitHub Actions. Every push to the repository and every pull request into `part3/main` runs the same set of checks automatically. If any check fails, the run fails and the failure is shown on the commit or pull request.
+
+The pipeline installs the dependencies, runs the backend and frontend tests, builds the frontend, audits the dependencies, scans the history for secrets and analyses the source code for security problems. A complete run takes about 80 seconds.
+
+| Job | What it does | The job fails when |
+|---|---|---|
+| Backend unit and API tests | Runs the 19 unit tests and the Newman collection against a MongoDB container | A test or an assertion fails |
+| Frontend lint, tests and build | Runs ESLint, the 63 Vitest tests and the production build | Lint, a test or the build fails |
+| Dependency audit | Audits the production dependencies of the backend and the frontend | A high or critical advisory is found |
+| Secret scan | Scans the commits of the push or pull request with gitleaks | A secret is found |
+| CodeQL static analysis | Analyses the source code with the security-extended queries | The analysis reports any result |
+| Pipeline gate | Waits for every job above | Any job above did not succeed |
+
+The backend has no separate build step. It is started from the installed packages during the Newman run, which confirms that it starts and serves requests. The frontend is built with `npm run build` and the output is kept as an artifact for each run.
+
+Building and starting the containers is outside this section. It can be added to the pipeline as a further job when the Docker files are merged.
+
+## Workflow Configuration
+
+The pipeline is defined in `.github/workflows/ci.yml`. The CodeQL settings are in `.github/codeql/codeql-config.yml`.
+
+- **Triggers:** Pushes to any branch, pull requests into `part3/main` and manual runs from the Actions tab.
+- **Permissions:** The workflow token is read-only by default. Only the CodeQL job can publish results to code scanning, and only the secret scan job can read pull request details.
+- **Pinned actions:** Every action is pinned to a full commit SHA, with the version in a comment. A tag that is moved later cannot change the code that the pipeline runs.
+- **Credentials:** The checkout step does not keep the token in the local git configuration. No secrets are stored for the pipeline.
+- **Concurrency:** A new push to a branch cancels the earlier run of that branch. Runs on `part3/main` are never cancelled.
+- **Node.js:** All jobs use Node.js 22, with the npm cache keyed on the lock files.
+- **Time limits:** Every job except the final gate has a time limit so that a stalled job cannot run indefinitely.
+- **Reports:** Test results and audit reports are saved as artifacts on every run, including failed runs. The CodeQL results are saved whenever the analysis completes.
+
+## Backend Checks
+
+The backend job starts a MongoDB 7 container as a service so that the API tests use a real database.
+
+1. Installs the backend dependencies with `npm ci`.
+2. Runs the unit tests with the Node.js test runner. There are 19 tests for the tax calculation and the income controller. The results are written to the console and to a JUnit file.
+3. Installs the Newman runner in the `postman` folder.
+4. Runs the Newman collection with `npm test` in the `postman` folder. The runner starts the API with a separate test database and removes the database afterwards.
+
+A run makes 96 requests and checks 283 assertions. The collection includes the security requests described in Part 2 (security headers, CORS, malformed and oversized requests, operator injection, script content in a gig and the rate limits), so these checks run on every push.
+
+The runner trusts the project's local HTTPS certificate instead of disabling certificate verification. This change was made after the static analysis reported disabled certificate validation in the runner, as described in Static Analysis Results and Fixes.
+
+The Newman summary is added to the job summary of the run. The unit test results and `postman/reports/` are saved in the `backend-test-reports` artifact.
+
+## Frontend Checks
+
+The frontend job runs in the `frontend` directory.
+
+1. Installs the dependencies with `npm ci`.
+2. Runs ESLint with `npm run lint`.
+3. Runs the 63 Vitest tests in 10 test files with `npm test`.
+4. Builds the production bundle with `npm run build`.
+
+The production build is saved as the `frontend-build` artifact for seven days.
+
+## Security Checks
+
+In addition to the security requests in the Newman collection, the pipeline runs three automated security checks.
+
+| Check | Looks for | Tool |
+|---|---|---|
+| Dependency audit | Known vulnerabilities in the production dependencies | `npm audit` |
+| Secret scan | Passwords, keys and tokens committed to the repository | gitleaks |
+| Static code analysis | Insecure code patterns such as injection and unsafe network or file handling | CodeQL |
+
+### Dependency Audit
+
+`npm audit --omit=dev --audit-level=high` runs for the backend and for the frontend. The job fails if a high or critical advisory affects a package that the running application uses.
+
+A full audit that also includes the development tools is saved as the `audit-reports` artifact, and a summary table is added to the job summary. Development tools are reported but do not fail the job, because they are not part of the running application.
+
+### Secret Scan
+
+gitleaks scans the commits that are part of each push or pull request. The full history is checked out so that the scanner can read every commit in that range. A scan of the complete commit history with the gitleaks command line tool, run when the pipeline was set up, found no secrets. The `.env` file and the `certs` folder are not committed.
+
+## Static Code Analysis
+
+Static code analysis is performed with CodeQL, the analysis engine that GitHub provides for code scanning. CodeQL builds a database that represents the source code and runs queries against it. The queries follow data from where it enters, such as a request body, to where it is used, such as a database query, to find insecure patterns.
+
+- **Language:** JavaScript, using the `javascript-typescript` analysis. This covers the Express API, the React frontend and the test runner.
+- **Queries:** The `security-extended` query suite. It includes the default security queries and additional queries for less common problems. In total 103 queries are run.
+- **Configuration:** `.github/codeql/codeql-config.yml`.
+- **Results:** The results are saved as a SARIF file in the `codeql-results` artifact of each run and are published to the **Security** tab of the repository under **Code scanning**.
+- **Gate:** The job counts the results in the SARIF file and fails if there is any. The job summary lists the rule, the file, the line and the security severity of each result.
+
+The CodeQL action publishes results but does not fail the job when it finds something. The count in the job is therefore what makes the pipeline fail. The results are also saved as an artifact so that the gate does not depend on publishing to code scanning.
+
+## Static Analysis Results and Fixes
+
+The first analysis of the repository reported five results. All five have been fixed. The latest analysis of `part3/main` reports no results and the Security tab shows no open alerts.
+
+| Rule | Location | Severity | What was reported | Fix |
+|---|---|---|---|---|
+| `js/incomplete-multi-character-sanitization` | `validators/gigValidation.js` | 7.8 | A single pass of the tag removal pattern can leave pieces of text that join into a new tag | Tag removal repeats until the text no longer changes, and any remaining angle brackets are removed |
+| `js/disabling-certificate-validation` | `postman/runNewman.js` | 7.5 | The test runner disabled certificate verification when it checked that the API had started | The runner trusts the local certificate and detects the start of the API from its start-up message instead of making an HTTPS request |
+| `js/sql-injection` | `controllers/bookingController.js` | 8.8 | The gig id from the request body is used in a database query | The id must be a string before it is validated and used |
+| `js/sql-injection` | `controllers/gigController.js` | 8.8 | The gig update is built from values in the request body | The update is built from typed values: text, numbers and a boolean |
+| `js/file-system-race` | `ensureSetup.js` | 7.7 | The `.env` file is checked and created in two separate steps | The file is created in a single step that fails if it already exists |
+
+Existing controls limited the practical risk of each result. The gig and booking inputs were already validated, the sanitiser already removed any angle bracket that was left over, and the other two results affect only local setup and test tooling. CodeQL reports these patterns because the safety depends on a check elsewhere rather than being visible where the value is used. Each fix makes the code safe at the point of use, so it no longer depends on that check.
+
+The behaviour of the application did not change. The 19 unit tests, the 283 Newman assertions and the 63 frontend tests pass before and after the fixes.
+
+## Dependency Findings and Fixes
+
+The dependency audit reported advisories in all three package folders.
+
+| Package folder | Advisories before (all / production) | Advisories after (all / production) |
+|---|---|---|
+| Backend (repository root) | 3 / 3 | 0 / 0 |
+| Frontend | 9 / 1 | 0 / 0 |
+| Newman runner (`postman`) | 20 / 0 | 9 / 0 |
+
+The following changes were made:
+
+- **Backend:** `body-parser` was updated from 2.3.0 to 2.4.0 (denial of service with a compressed request body), `ip-address` from 10.7.3 to 10.7.6 and `qs` from 6.16.0 to 6.17.1. These are updates within the version ranges that were already allowed.
+- **Frontend:** The production advisory was in `follow-redirects`, which was updated from 1.16.1 to 1.16.2. The remaining advisories were in development tools. `vitest`, `eslint`, `undici` and `zod` were updated to patched releases, and an `overrides` entry in `frontend/package.json` sets `minimatch` to 11.0.5 for ESLint. Lint, the 63 tests and the production build were run again after the change.
+- **Newman runner:** `overrides` entries in `postman/package.json` set patched versions of `flatted`, `handlebars`, `ip-address`, `jose`, `lodash`, `node-forge`, `qs` and `underscore`. This removed the critical advisory. Newman passed all 283 assertions after the change.
+
+The remaining advisories in the Newman runner come from `@faker-js/faker`, `csv-parse` and `uuid`. The audit offers no compatible fix for them. Its only suggestion is to downgrade Newman to version 4.6.1. These packages are development tools only. They are not installed in production, and `npm audit --omit=dev` reports nothing for the `postman` folder. The runner only calls the API on localhost with the collection stored in the repository, and it reads no CSV data files or external templates. The risk is therefore accepted, and the full audit continues to report it on every run.
+
+## Pipeline Failure Behaviour
+
+The pipeline is designed so that a problem cannot pass unnoticed. Each step stops with a failure code when its check fails, the job then fails, and the Pipeline gate job fails when any job before it did not succeed. The Pipeline gate is a single check name that can be set as a required check in the branch protection rules of `part3/main`, so that a failing run blocks a merge.
+
+| Run | Commit | Result | What it shows |
+|---|---|---|---|
+| [42371021229](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42371021229) | `ee08ac8` | Passed | The first run of the pipeline. The CodeQL gate read the wrong field of the SARIF file, so it passed although five results were reported. The gate was corrected afterwards. |
+| [42372024314](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42372024314) | `b9f7748` | Failed | With the gate corrected, CodeQL reported the three results that were still open and the Pipeline gate failed. The other four jobs passed. |
+| [42372546491](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42372546491) | `bb5d2ba` | Passed | All three results were fixed and CodeQL reported no results. |
+| [42373520579](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42373520579) | `279f135` | Passed | The run on `part3/main` after the pipeline pull request was merged. |
+
+The failed run remains in the Actions history as evidence that the pipeline fails when a check does not pass.
+
+## Pipeline Evidence
+
+The following evidence is included with the Part 3 submission.
+
+| Evidence | Location |
+|---|---|
+| Pipeline definition | `.github/workflows/ci.yml` |
+| CodeQL configuration | `.github/codeql/codeql-config.yml` |
+| Pipeline screenshots | `screenshots/ci/` |
+| Pipeline run extracts | `reports/pipeline/pipeline-runs.txt` |
+| Static analysis results | `reports/static-analysis/` |
+| Pipeline runs, passed and failed | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions |
+| Static analysis results on GitHub | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/security/code-scanning and the `codeql-results` artifact of each run |
+| Pull request that added the pipeline | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/pull/13 |
+| Test and Newman reports | The `backend-test-reports` artifact of each run and `postman/reports/` |
+| Audit reports | The `audit-reports` artifact of each run |
+
+The Security tab and the artifacts of a run can only be opened by a signed-in user with access to the repository. The static analysis results and the log lines that show each check result are therefore also stored in the repository, in `reports/static-analysis/` and `reports/pipeline/`.
+
+The screenshots in `screenshots/ci/` show the following.
+
+| Screenshot | Shows |
+|---|---|
+| `01-failed-run.png` | The failed run on `part3/ci-pipeline`. CodeQL static analysis and the Pipeline gate failed and the other four jobs passed |
+| `02-passed-run-part3-main.png` | The passed run on `part3/main` after the pull request was merged, with all six jobs and their times |
+| `03-checks-passed-part3-main.png` | The six successful checks on the latest commit of `part3/main` |
+| `04-repository-part3-main.png` | The repository on `part3/main` with the merge of pull request 13, 96 commits and the passing status |
+| `05-branch-check-status.png` | The branches page with the check status of `part3/main` (6 of 6) and `part3/ci-pipeline` (13 of 13) |
+| `06-pull-request-13-checks.png` | The checks of pull request 13 with all six jobs passed |
+
+## Main Implementation Files
+
+The following files contain the main pipeline and static analysis implementation.
+
+| File | Responsibility |
+|---|---|
+| `.github/workflows/ci.yml` | The CI pipeline |
+| `.github/codeql/codeql-config.yml` | CodeQL query suite |
+| `package.json` | The `test:unit` script for the backend unit tests |
+| `postman/runNewman.js` | Starts the API with a test database and runs the collection, trusting the local certificate |
+| `postman/package.json` | Overrides for patched versions of the Newman dependencies |
+| `frontend/package.json` | Override for the patched `minimatch` release |
+| `package-lock.json`, `frontend/package-lock.json`, `postman/package-lock.json` | Updated dependency versions |
+| `validators/gigValidation.js` | Tag removal repeated until the text is stable |
+| `controllers/bookingController.js` | String check on the gig id |
+| `controllers/gigController.js` | Gig update built from typed values |
+| `ensureSetup.js` | `.env` file created in a single step |
+
+## Running the Checks Locally
+
+The pipeline commands can be run on a local computer. MongoDB must be running for the Newman tests.
+
+From the repository root run:
+
+```powershell
+npm.cmd ci
+npm.cmd run test:unit
+npm.cmd run test:api
+```
+
+From the `frontend` directory run:
+
+```powershell
+npm.cmd ci
+npm.cmd run lint
+npm.cmd test
+npm.cmd run build
+```
+
+The dependency audit is run with the following command in the repository root and in the `frontend` directory:
+
+```powershell
+npm.cmd audit --omit=dev --audit-level=high
+```
+
+CodeQL and gitleaks run in the pipeline. Their results are available from the Actions tab and the Security tab.
+
+On macOS or Linux, use `npm` in place of `npm.cmd`.
+
+## Contribution Summary
+
+The pipeline adds automated testing, building and security checks to every push and pull request in the repository. It runs the backend unit tests, the Newman API tests and the frontend tests, builds the frontend, audits the dependencies, scans the history for secrets and analyses the source code with CodeQL.
+
+The static analysis found five results, which were fixed without changing the behaviour of the application. The dependency audit now reports no advisories for the backend and the frontend and none for the production dependencies of any package folder.
+
+This contribution satisfies the Part 3 requirement for a GitHub Actions pipeline that runs automatically, installs the dependencies, runs the backend and frontend tests, builds the frontend and fails when a test or check does not pass. It also satisfies the requirement for static code analysis in the pipeline, with the results and an explanation of what they indicate.
+
+---

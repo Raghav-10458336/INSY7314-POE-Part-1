@@ -1,0 +1,49 @@
+CodeQL static analysis results
+
+Tool:      CodeQL 2.27.4, query suite security-extended, 103 queries
+Scope:     38 of 38 JavaScript files, 1 of 1 GitHub Actions files and 1 of 1 HTML files
+Source:    the codeql-results artifact (SARIF) of each CI run, kept in this folder
+
+==============================================================================
+First analysis: run 42371021229, commit ee08ac8, branch part3/ci-pipeline
+Results: 5
+==============================================================================
+
+1. js/incomplete-multi-character-sanitization
+   Location: validators/gigValidation.js:10
+   Severity: warning (security severity 7.8, precision high)
+   Message:  This string may still contain <script, which may cause an HTML element injection vulnerability.
+
+2. js/sql-injection
+   Location: controllers/bookingController.js:17
+   Severity: error (security severity 8.8, precision high)
+   Message:  This query object depends on a user-provided value.
+
+3. js/sql-injection
+   Location: controllers/gigController.js:78
+   Severity: error (security severity 8.8, precision high)
+   Message:  This query object depends on a user-provided value.
+
+4. js/disabling-certificate-validation
+   Location: postman/runNewman.js:71
+   Severity: error (security severity 7.5, precision very-high)
+   Message:  Disabling certificate validation is strongly discouraged.
+
+5. js/file-system-race
+   Location: ensureSetup.js:13
+   Severity: warning (security severity 7.7, precision medium)
+   Message:  The file may have changed since it was checked.
+
+==============================================================================
+Latest analysis: run 42373520579, commit 279f135, branch part3/main
+Results: 0
+==============================================================================
+
+All five results above were fixed. The fixes are described in the README under
+Static Analysis Results and Fixes.
+
+Files in this folder:
+  codeql-first-run.sarif   the SARIF output of the first analysis (5 results)
+  codeql-latest.sarif      the SARIF output of the latest analysis (0 results)
+
+The SARIF files are the CodeQL output with one non-ASCII character written as an escape sequence.
