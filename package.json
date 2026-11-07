@@ -11,6 +11,7 @@
     "test:api": "cd postman && npm install --no-audit --no-fund && npm test",
     "test:tax": "node --test tests/taxCalculator.test.js",
     "test:income": "node --test tests/incomeController.test.js",
+    "test:unit": "node --test \"tests/**/*.test.js\"",
     "prestart": "node ensureSetup.js",
     "setup": "node ensureSetup.js"
   },
