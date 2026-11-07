@@ -236,14 +236,13 @@ jobs:
 
       - name: Fail when alerts are found
         run: |
-          filter='.runs[].results[]? | select(.level == "error" or .level == "warning")'
-          alerts=$(jq -s "[.[] | $filter] | length" codeql-results/*.sarif)
+          alerts=$(jq -s '[.[].runs[].results[]?] | length' codeql-results/*.sarif)
           {
             echo '### CodeQL results'
-            echo "Alerts at warning level or above: $alerts"
+            echo "Alerts found: $alerts"
             if [ "$alerts" -gt 0 ]; then
               echo '```'
-              jq -r "$filter | \"\(.ruleId)  \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)\"" codeql-results/*.sarif
+              jq -r '.runs[] | ([.tool.extensions[]?.rules[]? | {key: .id, value: (.properties["security-severity"] // "n/a")}] | from_entries) as $severity | .results[]? | "\(.ruleId)  \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)  security severity \($severity[.ruleId])"' codeql-results/*.sarif
               echo '```'
             fi
           } | tee -a "$GITHUB_STEP_SUMMARY"
