@@ -248,3 +248,19 @@ jobs:
             fi
           } | tee -a "$GITHUB_STEP_SUMMARY"
           [ "$alerts" -eq 0 ]
+
+  pipeline-gate:
+    name: Pipeline gate
+    if: ${{ always() }}
+    needs:
+      - backend
+      - frontend
+      - dependency-audit
+      - secret-scan
+      - codeql
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every job to pass
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo '${{ toJSON(needs) }}' | jq -e 'all(.[]; .result == "success")' > /dev/null
