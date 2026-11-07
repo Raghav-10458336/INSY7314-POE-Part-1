@@ -7,6 +7,32 @@ import {
     getMyBookings
 } from '../api/bookingApi'
 
+function StarIcon() {
+    return (
+        <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z" />
+        </svg>
+    )
+}
+
+function CheckIcon() {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            width="1em"
+            height="1em"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+        </svg>
+    )
+}
+
 // Dashboard displayed to authenticated client accounts.
 export default function ClientHomePage() {
     const navigate = useNavigate()
@@ -210,7 +236,7 @@ export default function ClientHomePage() {
 
                     <div className="client-hero-art" aria-hidden="true">
                         <div className="client-art-card client-art-card-back">
-                            <div className="client-art-icon">✦</div>
+                            <div className="client-art-icon"><StarIcon /></div>
                             <div className="client-art-line"></div>
                             <div className="client-art-line short"></div>
                         </div>
@@ -221,7 +247,7 @@ export default function ClientHomePage() {
                                 <div className="client-art-line"></div>
                                 <div className="client-art-line short"></div>
                             </div>
-                            <div className="client-art-check">✓</div>
+                            <div className="client-art-check"><CheckIcon /></div>
                         </div>
 
                         <div className="client-art-circle"></div>
@@ -279,7 +305,7 @@ export default function ClientHomePage() {
                                     key={gig._id}
                                 >
                                     <div className="client-feature-icon teal-icon">
-                                        ✦
+                                        <StarIcon />
                                     </div>
 
                                     <h3>{gig.title}</h3>
@@ -374,7 +400,7 @@ export default function ClientHomePage() {
                                         key={bookingItem._id}
                                     >
                                         <div className="client-feature-icon teal-icon">
-                                            ✓
+                                            <CheckIcon />
                                         </div>
 
                                         <h3>

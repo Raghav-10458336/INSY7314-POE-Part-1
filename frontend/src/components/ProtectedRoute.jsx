@@ -24,7 +24,7 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
 
     // Prevent users from accessing pages outside their role.
     if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-        return <p>403 — Access denied. You do not have permission to view this page.</p>
+        return <p>403 - Access denied. You do not have permission to view this page.</p>
     }
 
     return children

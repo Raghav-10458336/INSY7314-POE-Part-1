@@ -70,19 +70,24 @@ async function updateGig(req, res, next) {
             active
         } = req.body
 
+        const updates = {
+            title: String(title),
+            description: String(description),
+            category: String(category),
+            price: Number(price),
+            deliveryDays: Number(deliveryDays)
+        }
+
+        if (active !== undefined) {
+            updates.active = Boolean(active)
+        }
+
         const gig = await Gig.findOneAndUpdate(
             {
                 _id: req.params.id,
                 freelancer: req.user.id
             },
-            {
-                title,
-                description,
-                category,
-                price,
-                deliveryDays,
-                active
-            },
+            updates,
             {
                 new: true,
                 runValidators: true

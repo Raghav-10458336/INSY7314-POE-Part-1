@@ -6,11 +6,18 @@ const {
 } = require('express-validator')
 
 // markup is removed instead of escaped because React already encodes text when it is shown
-const removeMarkup = value =>
-    value
-        .replace(/<[^>]*>/g, '')
-        .replace(/[<>]/g, '')
-        .trim()
+const removeMarkup = value => {
+    let text = value
+    let previous
+
+    // repeated until stable so removing one tag cannot join the text around it into a new tag
+    do {
+        previous = text
+        text = text.replace(/<[^>]*>/g, '')
+    } while (text !== previous)
+
+    return text.replace(/[<>]/g, '').trim()
+}
 
 // Validate and sanitise gig details before database operations.
 const gigValidationRules = [

@@ -1,0 +1,265 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - part3/main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/part3/main' }}
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  backend:
+    name: Backend unit and API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            postman/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: >-
+          node --test
+          --test-reporter=spec --test-reporter-destination=stdout
+          --test-reporter=junit --test-reporter-destination=unit-junit.xml
+          "tests/**/*.test.js"
+
+      - name: Install API test dependencies
+        working-directory: postman
+        run: npm ci
+
+      - name: Run API tests with Newman
+        working-directory: postman
+        run: npm test
+        env:
+          TEST_MONGO_URI: mongodb://127.0.0.1:27017/hustlehub_test
+
+      - name: Add the Newman summary to the job summary
+        if: ${{ always() }}
+        run: |
+          if [ -f postman/reports/newman-cli.txt ]; then
+            { echo '### Newman results'; echo '```'; tail -n 16 postman/reports/newman-cli.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload test reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-test-reports
+          path: |
+            postman/reports
+            unit-junit.xml
+          if-no-files-found: warn
+
+  frontend:
+    name: Frontend lint, tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload the production build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frontend-build
+          path: frontend/dist
+          retention-days: 7
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Audit backend production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit frontend production dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Save the full audit reports
+        if: ${{ always() }}
+        continue-on-error: true
+        run: |
+          mkdir -p audit-reports
+          npm audit --json > audit-reports/backend.json || true
+          (cd frontend && npm audit --json > ../audit-reports/frontend.json) || true
+          (cd postman && npm audit --json > ../audit-reports/postman.json) || true
+          {
+            echo '### Full audit including development dependencies'
+            echo '| Package folder | Low | Moderate | High | Critical |'
+            echo '|---|---|---|---|---|'
+            for name in backend frontend postman; do
+              jq -r --arg n "$name" '"| \($n) | \(.metadata.vulnerabilities.low) | \(.metadata.vulnerabilities.moderate) | \(.metadata.vulnerabilities.high) | \(.metadata.vulnerabilities.critical) |"' "audit-reports/$name.json"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the audit reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: audit-reports
+          path: audit-reports
+          if-no-files-found: ignore
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check out the full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan for secrets with gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+
+  codeql:
+    name: CodeQL static analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+
+      # upload is handled below so the results are kept even if the repository is private
+      - name: Run the CodeQL analysis
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          category: /language:javascript-typescript
+          output: codeql-results
+          upload: never
+
+      - name: Upload the SARIF results
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codeql-results
+          path: codeql-results
+          if-no-files-found: error
+
+      - name: Publish the results to code scanning
+        if: ${{ !github.event.repository.private }}
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: codeql-results
+          category: /language:javascript-typescript
+
+      - name: Fail when alerts are found
+        run: |
+          alerts=$(jq -s '[.[].runs[].results[]?] | length' codeql-results/*.sarif)
+          {
+            echo '### CodeQL results'
+            echo "Alerts found: $alerts"
+            if [ "$alerts" -gt 0 ]; then
+              echo '```'
+              jq -r '.runs[] | ([.tool.extensions[]?.rules[]? | {key: .id, value: (.properties["security-severity"] // "n/a")}] | from_entries) as $severity | .results[]? | "\(.ruleId)  \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)  security severity \($severity[.ruleId])"' codeql-results/*.sarif
+              echo '```'
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          [ "$alerts" -eq 0 ]
+
+  pipeline-gate:
+    name: Pipeline gate
+    if: ${{ always() }}
+    needs:
+      - backend
+      - frontend
+      - dependency-audit
+      - secret-scan
+      - codeql
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every job to pass
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo '${{ toJSON(needs) }}' | jq -e 'all(.[]; .result == "success")' > /dev/null

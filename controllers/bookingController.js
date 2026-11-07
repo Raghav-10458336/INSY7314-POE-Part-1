@@ -9,7 +9,7 @@ async function createBooking(req, res, next) {
         const { gigId } = req.body
 
         // Validate the supplied gig ID before querying MongoDB.
-        if (!mongoose.isValidObjectId(gigId)) {
+        if (typeof gigId !== 'string' || !mongoose.isValidObjectId(gigId)) {
             throw new ApiError(400, 'invalid gig')
         }
 

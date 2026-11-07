@@ -7,11 +7,16 @@ const certDir = path.join(__dirname, 'certs')
 const keyPath = path.join(certDir, 'key.pem')
 const certPath = path.join(certDir, 'cert.pem')
 
-if (!fs.existsSync(envPath)) {
-  const crypto = require('crypto')
-  const secret = crypto.randomBytes(48).toString('hex')
-  fs.writeFileSync(envPath, `PORT=5000\nNODE_ENV=development\nJWT_SECRET=${secret}\nMONGO_URI=mongodb://127.0.0.1:27017/hustlehub\n`)
+const crypto = require('crypto')
+const secret = crypto.randomBytes(48).toString('hex')
+
+try {
+  fs.writeFileSync(envPath, `PORT=5000\nNODE_ENV=development\nJWT_SECRET=${secret}\nMONGO_URI=mongodb://127.0.0.1:27017/hustlehub\n`, { flag: 'wx' })
   console.log('Created local .env file.')
+} catch (err) {
+  if (err.code !== 'EEXIST') {
+    throw err
+  }
 }
 
 if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
