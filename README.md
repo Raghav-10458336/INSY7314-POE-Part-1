@@ -1608,7 +1608,7 @@ The pipeline installs the dependencies, runs the backend and frontend tests, bui
 | Backend unit and API tests | Runs the 19 unit tests and the Newman collection against a MongoDB container | A test or an assertion fails |
 | Frontend lint, tests and build | Runs ESLint, the 63 Vitest tests and the production build | Lint, a test or the build fails |
 | Dependency audit | Audits the production dependencies of the backend and the frontend | A high or critical advisory is found |
-| Secret scan | Scans the full commit history with gitleaks | A secret is found |
+| Secret scan | Scans the commits of the push or pull request with gitleaks | A secret is found |
 | CodeQL static analysis | Analyses the source code with the security-extended queries | The analysis reports any result |
 | Pipeline gate | Waits for every job above | Any job above did not succeed |
 
@@ -1673,7 +1673,7 @@ A full audit that also includes the development tools is saved as the `audit-rep
 
 ### Secret Scan
 
-gitleaks scans the complete commit history, not only the latest commit. The `.env` file and the `certs` folder are not committed. The scan has not found any secrets.
+gitleaks scans the commits that are part of each push or pull request. The full history is checked out so that the scanner can read every commit in that range. A scan of the complete commit history with the gitleaks command line tool, run when the pipeline was set up, found no secrets. The `.env` file and the `certs` folder are not committed.
 
 ## Static Code Analysis
 
@@ -1742,11 +1742,27 @@ The following evidence is included with the Part 3 submission.
 |---|---|
 | Pipeline definition | `.github/workflows/ci.yml` |
 | CodeQL configuration | `.github/codeql/codeql-config.yml` |
+| Pipeline screenshots | `screenshots/ci/` |
+| Pipeline run extracts | `reports/pipeline/pipeline-runs.txt` |
+| Static analysis results | `reports/static-analysis/` |
 | Pipeline runs, passed and failed | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions |
-| Static analysis results | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/security/code-scanning and the `codeql-results` artifact of each run |
+| Static analysis results on GitHub | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/security/code-scanning and the `codeql-results` artifact of each run |
 | Pull request that added the pipeline | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/pull/13 |
 | Test and Newman reports | The `backend-test-reports` artifact of each run and `postman/reports/` |
 | Audit reports | The `audit-reports` artifact of each run |
+
+The Security tab and the artifacts of a run can only be opened by a signed-in user with access to the repository. The static analysis results and the log lines that show each check result are therefore also stored in the repository, in `reports/static-analysis/` and `reports/pipeline/`.
+
+The screenshots in `screenshots/ci/` show the following.
+
+| Screenshot | Shows |
+|---|---|
+| `01-failed-run.png` | The failed run on `part3/ci-pipeline`. CodeQL static analysis and the Pipeline gate failed and the other four jobs passed |
+| `02-passed-run-part3-main.png` | The passed run on `part3/main` after the pull request was merged, with all six jobs and their times |
+| `03-checks-passed-part3-main.png` | The six successful checks on the latest commit of `part3/main` |
+| `04-repository-part3-main.png` | The repository on `part3/main` with the merge of pull request 13, 96 commits and the passing status |
+| `05-branch-check-status.png` | The branches page with the check status of `part3/main` (6 of 6) and `part3/ci-pipeline` (13 of 13) |
+| `06-pull-request-13-checks.png` | The checks of pull request 13 with all six jobs passed |
 
 ## Main Implementation Files
 
