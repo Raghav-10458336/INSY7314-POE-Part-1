@@ -1721,3 +1721,88 @@ The following changes were made:
 
 The remaining advisories in the Newman runner come from `@faker-js/faker`, `csv-parse` and `uuid`. The audit offers no compatible fix for them. Its only suggestion is to downgrade Newman to version 4.6.1. These packages are development tools only. They are not installed in production, and `npm audit --omit=dev` reports nothing for the `postman` folder. The runner only calls the API on localhost with the collection stored in the repository, and it reads no CSV data files or external templates. The risk is therefore accepted, and the full audit continues to report it on every run.
 
+## Pipeline Failure Behaviour
+
+The pipeline is designed so that a problem cannot pass unnoticed. Each step stops with a failure code when its check fails, the job then fails, and the Pipeline gate job fails when any job before it did not succeed. The Pipeline gate is a single check name that can be set as a required check in the branch protection rules of `part3/main`, so that a failing run blocks a merge.
+
+| Run | Commit | Result | What it shows |
+|---|---|---|---|
+| [42371021229](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42371021229) | `ee08ac8` | Passed | The first run of the pipeline. The CodeQL gate read the wrong field of the SARIF file, so it passed although five results were reported. The gate was corrected afterwards. |
+| [42372024314](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42372024314) | `b9f7748` | Failed | With the gate corrected, CodeQL reported the three results that were still open and the Pipeline gate failed. The other four jobs passed. |
+| [42372546491](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42372546491) | `bb5d2ba` | Passed | All three results were fixed and CodeQL reported no results. |
+| [42373520579](https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions/runs/42373520579) | `279f135` | Passed | The run on `part3/main` after the pipeline pull request was merged. |
+
+The failed run remains in the Actions history as evidence that the pipeline fails when a check does not pass.
+
+## Pipeline Evidence
+
+The following evidence is included with the Part 3 submission.
+
+| Evidence | Location |
+|---|---|
+| Pipeline definition | `.github/workflows/ci.yml` |
+| CodeQL configuration | `.github/codeql/codeql-config.yml` |
+| Pipeline runs, passed and failed | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/actions |
+| Static analysis results | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/security/code-scanning and the `codeql-results` artifact of each run |
+| Pull request that added the pipeline | https://github.com/Raghav-10458336/INSY7314-POE-Part-1/pull/13 |
+| Test and Newman reports | The `backend-test-reports` artifact of each run and `postman/reports/` |
+| Audit reports | The `audit-reports` artifact of each run |
+
+## Main Implementation Files
+
+The following files contain the main pipeline and static analysis implementation.
+
+| File | Responsibility |
+|---|---|
+| `.github/workflows/ci.yml` | The CI pipeline |
+| `.github/codeql/codeql-config.yml` | CodeQL query suite |
+| `package.json` | The `test:unit` script for the backend unit tests |
+| `postman/runNewman.js` | Starts the API with a test database and runs the collection, trusting the local certificate |
+| `postman/package.json` | Overrides for patched versions of the Newman dependencies |
+| `frontend/package.json` | Override for the patched `minimatch` release |
+| `package-lock.json`, `frontend/package-lock.json`, `postman/package-lock.json` | Updated dependency versions |
+| `validators/gigValidation.js` | Tag removal repeated until the text is stable |
+| `controllers/bookingController.js` | String check on the gig id |
+| `controllers/gigController.js` | Gig update built from typed values |
+| `ensureSetup.js` | `.env` file created in a single step |
+
+## Running the Checks Locally
+
+The pipeline commands can be run on a local computer. MongoDB must be running for the Newman tests.
+
+From the repository root run:
+
+```powershell
+npm.cmd ci
+npm.cmd run test:unit
+npm.cmd run test:api
+```
+
+From the `frontend` directory run:
+
+```powershell
+npm.cmd ci
+npm.cmd run lint
+npm.cmd test
+npm.cmd run build
+```
+
+The dependency audit is run with the following command in the repository root and in the `frontend` directory:
+
+```powershell
+npm.cmd audit --omit=dev --audit-level=high
+```
+
+CodeQL and gitleaks run in the pipeline. Their results are available from the Actions tab and the Security tab.
+
+On macOS or Linux, use `npm` in place of `npm.cmd`.
+
+## Contribution Summary
+
+The pipeline adds automated testing, building and security checks to every push and pull request in the repository. It runs the backend unit tests, the Newman API tests and the frontend tests, builds the frontend, audits the dependencies, scans the history for secrets and analyses the source code with CodeQL.
+
+The static analysis found five results, which were fixed without changing the behaviour of the application. The dependency audit now reports no advisories for the backend and the frontend and none for the production dependencies of any package folder.
+
+This contribution satisfies the Part 3 requirement for a GitHub Actions pipeline that runs automatically, installs the dependencies, runs the backend and frontend tests, builds the frontend and fails when a test or check does not pass. It also satisfies the requirement for static code analysis in the pipeline, with the results and an explanation of what they indicate.
+
+---
