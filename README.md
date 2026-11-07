@@ -1588,3 +1588,90 @@ The implementation provides an approximate South African income tax calculation,
 The functionality was integrated with the existing authentication, transaction and income systems and verified through automated tests, static analysis, production build checks and manual integration testing.
 
 This contribution satisfies the Part 3 requirement for a tax estimation component with clearly explained calculation logic and a structured, visually appealing freelancer income and tax interface.
+
+---
+
+# Part 3 - CI/CD Pipeline and Static Code Analysis
+
+**Team Member:** Ophec Funis  
+**Student Number:** ST10089492  
+**Responsibility:** The GitHub Actions pipeline, static code analysis, dependency and secret scanning, and the pipeline evidence.
+
+## Pipeline Overview
+
+Part 3 adds a continuous integration pipeline using GitHub Actions. Every push to the repository and every pull request into `part3/main` runs the same set of checks automatically. If any check fails, the run fails and the failure is shown on the commit or pull request.
+
+The pipeline installs the dependencies, runs the backend and frontend tests, builds the frontend, audits the dependencies, scans the history for secrets and analyses the source code for security problems. A complete run takes about 80 seconds.
+
+| Job | What it does | The job fails when |
+|---|---|---|
+| Backend unit and API tests | Runs the 19 unit tests and the Newman collection against a MongoDB container | A test or an assertion fails |
+| Frontend lint, tests and build | Runs ESLint, the 63 Vitest tests and the production build | Lint, a test or the build fails |
+| Dependency audit | Audits the production dependencies of the backend and the frontend | A high or critical advisory is found |
+| Secret scan | Scans the full commit history with gitleaks | A secret is found |
+| CodeQL static analysis | Analyses the source code with the security-extended queries | The analysis reports any result |
+| Pipeline gate | Waits for every job above | Any job above did not succeed |
+
+The backend has no separate build step. It is started from the installed packages during the Newman run, which confirms that it starts and serves requests. The frontend is built with `npm run build` and the output is kept as an artifact for each run.
+
+Building and starting the containers is outside this section. It can be added to the pipeline as a further job when the Docker files are merged.
+
+## Workflow Configuration
+
+The pipeline is defined in `.github/workflows/ci.yml`. The CodeQL settings are in `.github/codeql/codeql-config.yml`.
+
+- **Triggers:** Pushes to any branch, pull requests into `part3/main` and manual runs from the Actions tab.
+- **Permissions:** The workflow token is read-only by default. Only the CodeQL job can publish results to code scanning, and only the secret scan job can read pull request details.
+- **Pinned actions:** Every action is pinned to a full commit SHA, with the version in a comment. A tag that is moved later cannot change the code that the pipeline runs.
+- **Credentials:** The checkout step does not keep the token in the local git configuration. No secrets are stored for the pipeline.
+- **Concurrency:** A new push to a branch cancels the earlier run of that branch. Runs on `part3/main` are never cancelled.
+- **Node.js:** All jobs use Node.js 22, with the npm cache keyed on the lock files.
+- **Time limits:** Every job except the final gate has a time limit so that a stalled job cannot run indefinitely.
+- **Reports:** Test results and audit reports are saved as artifacts on every run, including failed runs. The CodeQL results are saved whenever the analysis completes.
+
+## Backend Checks
+
+The backend job starts a MongoDB 7 container as a service so that the API tests use a real database.
+
+1. Installs the backend dependencies with `npm ci`.
+2. Runs the unit tests with the Node.js test runner. There are 19 tests for the tax calculation and the income controller. The results are written to the console and to a JUnit file.
+3. Installs the Newman runner in the `postman` folder.
+4. Runs the Newman collection with `npm test` in the `postman` folder. The runner starts the API with a separate test database and removes the database afterwards.
+
+A run makes 96 requests and checks 283 assertions. The collection includes the security requests described in Part 2 (security headers, CORS, malformed and oversized requests, operator injection, script content in a gig and the rate limits), so these checks run on every push.
+
+The runner trusts the project's local HTTPS certificate instead of disabling certificate verification. This change was made after the static analysis reported disabled certificate validation in the runner, as described in Static Analysis Results and Fixes.
+
+The Newman summary is added to the job summary of the run. The unit test results and `postman/reports/` are saved in the `backend-test-reports` artifact.
+
+## Frontend Checks
+
+The frontend job runs in the `frontend` directory.
+
+1. Installs the dependencies with `npm ci`.
+2. Runs ESLint with `npm run lint`.
+3. Runs the 63 Vitest tests in 10 test files with `npm test`.
+4. Builds the production bundle with `npm run build`.
+
+The production build is saved as the `frontend-build` artifact for seven days.
+
+## Security Checks
+
+In addition to the security requests in the Newman collection, the pipeline runs three automated security checks.
+
+| Check | Looks for | Tool |
+|---|---|---|
+| Dependency audit | Known vulnerabilities in the production dependencies | `npm audit` |
+| Secret scan | Passwords, keys and tokens committed to the repository | gitleaks |
+| Static code analysis | Insecure code patterns such as injection and unsafe network or file handling | CodeQL |
+
+### Dependency Audit
+
+`npm audit --omit=dev --audit-level=high` runs for the backend and for the frontend. The job fails if a high or critical advisory affects a package that the running application uses.
+
+A full audit that also includes the development tools is saved as the `audit-reports` artifact, and a summary table is added to the job summary. Development tools are reported but do not fail the job, because they are not part of the running application.
+
+### Secret Scan
+
+gitleaks scans the complete commit history, not only the latest commit. The `.env` file and the `certs` folder are not committed. The scan has not found any secrets.
+
