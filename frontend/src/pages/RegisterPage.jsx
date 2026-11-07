@@ -225,10 +225,10 @@ export default function RegisterPage() {
                         required
                     >
                         <option value="client">
-                            Client — Hire freelancers
+                            Client - Hire freelancers
                         </option>
                         <option value="freelancer">
-                            Freelancer — Offer services
+                            Freelancer - Offer services
                         </option>
                     </select>
 
