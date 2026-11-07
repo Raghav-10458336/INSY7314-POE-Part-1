@@ -122,3 +122,50 @@ jobs:
           name: frontend-build
           path: frontend/dist
           retention-days: 7
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Audit backend production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit frontend production dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Save the full audit reports
+        if: ${{ always() }}
+        continue-on-error: true
+        run: |
+          mkdir -p audit-reports
+          npm audit --json > audit-reports/backend.json || true
+          (cd frontend && npm audit --json > ../audit-reports/frontend.json) || true
+          (cd postman && npm audit --json > ../audit-reports/postman.json) || true
+          {
+            echo '### Full audit including development dependencies'
+            echo '| Package folder | Low | Moderate | High | Critical |'
+            echo '|---|---|---|---|---|'
+            for name in backend frontend postman; do
+              jq -r --arg n "$name" '"| \($n) | \(.metadata.vulnerabilities.low) | \(.metadata.vulnerabilities.moderate) | \(.metadata.vulnerabilities.high) | \(.metadata.vulnerabilities.critical) |"' "audit-reports/$name.json"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the audit reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: audit-reports
+          path: audit-reports
+          if-no-files-found: ignore
