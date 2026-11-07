@@ -1675,3 +1675,49 @@ A full audit that also includes the development tools is saved as the `audit-rep
 
 gitleaks scans the complete commit history, not only the latest commit. The `.env` file and the `certs` folder are not committed. The scan has not found any secrets.
 
+## Static Code Analysis
+
+Static code analysis is performed with CodeQL, the analysis engine that GitHub provides for code scanning. CodeQL builds a database that represents the source code and runs queries against it. The queries follow data from where it enters, such as a request body, to where it is used, such as a database query, to find insecure patterns.
+
+- **Language:** JavaScript, using the `javascript-typescript` analysis. This covers the Express API, the React frontend and the test runner.
+- **Queries:** The `security-extended` query suite. It includes the default security queries and additional queries for less common problems. In total 103 queries are run.
+- **Configuration:** `.github/codeql/codeql-config.yml`.
+- **Results:** The results are saved as a SARIF file in the `codeql-results` artifact of each run and are published to the **Security** tab of the repository under **Code scanning**.
+- **Gate:** The job counts the results in the SARIF file and fails if there is any. The job summary lists the rule, the file, the line and the security severity of each result.
+
+The CodeQL action publishes results but does not fail the job when it finds something. The count in the job is therefore what makes the pipeline fail. The results are also saved as an artifact so that the gate does not depend on publishing to code scanning.
+
+## Static Analysis Results and Fixes
+
+The first analysis of the repository reported five results. All five have been fixed. The latest analysis of `part3/main` reports no results and the Security tab shows no open alerts.
+
+| Rule | Location | Severity | What was reported | Fix |
+|---|---|---|---|---|
+| `js/incomplete-multi-character-sanitization` | `validators/gigValidation.js` | 7.8 | A single pass of the tag removal pattern can leave pieces of text that join into a new tag | Tag removal repeats until the text no longer changes, and any remaining angle brackets are removed |
+| `js/disabling-certificate-validation` | `postman/runNewman.js` | 7.5 | The test runner disabled certificate verification when it checked that the API had started | The runner trusts the local certificate and detects the start of the API from its start-up message instead of making an HTTPS request |
+| `js/sql-injection` | `controllers/bookingController.js` | 8.8 | The gig id from the request body is used in a database query | The id must be a string before it is validated and used |
+| `js/sql-injection` | `controllers/gigController.js` | 8.8 | The gig update is built from values in the request body | The update is built from typed values: text, numbers and a boolean |
+| `js/file-system-race` | `ensureSetup.js` | 7.7 | The `.env` file is checked and created in two separate steps | The file is created in a single step that fails if it already exists |
+
+Existing controls limited the practical risk of each result. The gig and booking inputs were already validated, the sanitiser already removed any angle bracket that was left over, and the other two results affect only local setup and test tooling. CodeQL reports these patterns because the safety depends on a check elsewhere rather than being visible where the value is used. Each fix makes the code safe at the point of use, so it no longer depends on that check.
+
+The behaviour of the application did not change. The 19 unit tests, the 283 Newman assertions and the 63 frontend tests pass before and after the fixes.
+
+## Dependency Findings and Fixes
+
+The dependency audit reported advisories in all three package folders.
+
+| Package folder | Advisories before (all / production) | Advisories after (all / production) |
+|---|---|---|
+| Backend (repository root) | 3 / 3 | 0 / 0 |
+| Frontend | 9 / 1 | 0 / 0 |
+| Newman runner (`postman`) | 20 / 0 | 9 / 0 |
+
+The following changes were made:
+
+- **Backend:** `body-parser` was updated from 2.3.0 to 2.4.0 (denial of service with a compressed request body), `ip-address` from 10.7.3 to 10.7.6 and `qs` from 6.16.0 to 6.17.1. These are updates within the version ranges that were already allowed.
+- **Frontend:** The production advisory was in `follow-redirects`, which was updated from 1.16.1 to 1.16.2. The remaining advisories were in development tools. `vitest`, `eslint`, `undici` and `zod` were updated to patched releases, and an `overrides` entry in `frontend/package.json` sets `minimatch` to 11.0.5 for ESLint. Lint, the 63 tests and the production build were run again after the change.
+- **Newman runner:** `overrides` entries in `postman/package.json` set patched versions of `flatted`, `handlebars`, `ip-address`, `jose`, `lodash`, `node-forge`, `qs` and `underscore`. This removed the critical advisory. Newman passed all 283 assertions after the change.
+
+The remaining advisories in the Newman runner come from `@faker-js/faker`, `csv-parse` and `uuid`. The audit offers no compatible fix for them. Its only suggestion is to downgrade Newman to version 4.6.1. These packages are development tools only. They are not installed in production, and `npm audit --omit=dev` reports nothing for the `postman` folder. The runner only calls the API on localhost with the collection stored in the repository, and it reads no CSV data files or external templates. The risk is therefore accepted, and the full audit continues to report it on every run.
+
