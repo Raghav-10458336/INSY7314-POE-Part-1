@@ -128,15 +128,15 @@ validation, authentication, business logic, data models and error handling.
 
 The main backend components are:
 
-- `routes/` – Defines API endpoints and maps requests to controllers.
-- `controllers/` – Contains the main application and authentication logic.
-- `models/` – Defines the structure used for user and application data.
-- `middleware/` – Provides reusable security and request-processing controls,
+- `routes/` - Defines API endpoints and maps requests to controllers.
+- `controllers/` - Contains the main application and authentication logic.
+- `models/` - Defines the structure used for user and application data.
+- `middleware/` - Provides reusable security and request-processing controls,
   including authentication, validation and error handling.
-- `server.js` – Initialises the Express application and HTTPS server.
-- `cert/` – Contains the locally configured SSL certificate and private key
+- `server.js` - Initialises the Express application and HTTPS server.
+- `cert/` - Contains the locally configured SSL certificate and private key
   required for HTTPS development.
-- `postman/` – Contains the Postman collection used to test API functionality
+- `postman/` - Contains the Postman collection used to test API functionality
   and security scenarios.
 
 This separation ensures that routing, authentication, validation and business
@@ -558,7 +558,7 @@ The My Gigs page allows freelancers to manage their listings.
 
 ---
 
-# Part 2 — Member 2: Authentication & Security
+# Part 2 - Member 2: Authentication & Security
 
 **Team Member:** Raghav Maharaj  
 **Student Number:** ST10458336  
@@ -1160,12 +1160,12 @@ The component uses the following South African personal income tax brackets for 
 
 | Taxable Income | Tax Calculation |
 |---|---|
-| R0 – R245 100 | 18% of taxable income |
-| R245 101 – R383 100 | R44 118 + 26% of income above R245 100 |
-| R383 101 – R530 200 | R79 998 + 31% of income above R383 100 |
-| R530 201 – R695 800 | R125 599 + 36% of income above R530 200 |
-| R695 801 – R887 000 | R185 215 + 39% of income above R695 800 |
-| R887 001 – R1 878 600 | R259 783 + 41% of income above R887 000 |
+| R0 to R245 100 | 18% of taxable income |
+| R245 101 to R383 100 | R44 118 + 26% of income above R245 100 |
+| R383 101 to R530 200 | R79 998 + 31% of income above R383 100 |
+| R530 201 to R695 800 | R125 599 + 36% of income above R530 200 |
+| R695 801 to R887 000 | R185 215 + 39% of income above R695 800 |
+| R887 001 to R1 878 600 | R259 783 + 41% of income above R887 000 |
 | Above R1 878 600 | R666 339 + 45% of income above R1 878 600 |
 
 The calculation also applies the **primary rebate of R17 820** for taxpayers younger than 65.
@@ -1177,14 +1177,14 @@ The general progressive tax calculation is:
 ```text
 Gross Tax =
     Base Tax for Bracket
-    + (Taxable Income - Bracket Lower Threshold) × Marginal Rate
+    + (Taxable Income - Bracket Lower Threshold) x Marginal Rate
 
 Estimated Tax = MAX(0, Gross Tax - Primary Rebate)
 
 After-Tax Income = Tax-Year Earnings - Estimated Tax
 
 Effective Tax Rate =
-    (Estimated Tax / Tax-Year Earnings) × 100
+    (Estimated Tax / Tax-Year Earnings) x 100
 ```
 
 When tax-year earnings are zero, the effective tax rate is treated as zero to avoid division by zero.
@@ -1197,7 +1197,7 @@ A freelancer with R300 000 in tax-year earnings falls within the 26% marginal ta
 Tax-Year Earnings: R300 000.00
 
 Gross Tax:
-R44 118 + (R300 000 - R245 100) × 26%
+R44 118 + (R300 000 - R245 100) x 26%
 
 = R44 118 + R14 274
 = R58 392
@@ -1214,7 +1214,7 @@ R300 000 - R40 572
 = R259 428
 
 Effective Tax Rate:
-(R40 572 / R300 000) × 100
+(R40 572 / R300 000) x 100
 = 13.52%
 ```
 
