@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const https = require('https')
 const crypto = require('crypto')
 const { spawn, execFileSync } = require('child_process')
 
@@ -14,6 +13,7 @@ const mongoose = require('mongoose')
 const port = process.env.TEST_PORT || '5055'
 const baseUrl = `https://localhost:${port}`
 const reportDir = path.join(__dirname, 'reports')
+const certPath = path.join(root, 'certs', 'cert.pem')
 
 function testDatabaseUri() {
     if (process.env.TEST_MONGO_URI) {
@@ -44,46 +44,29 @@ function ensureCertificates() {
     }
 }
 
+// the collection's first request checks /health, so readiness only needs the start-up line
 function waitForServer(server) {
     return new Promise((resolve, reject) => {
-        const started = Date.now()
+        const timer = setTimeout(
+            () => reject(new Error('server did not start within 30 seconds')),
+            30000
+        )
 
         server.once('exit', code => {
+            clearTimeout(timer)
             reject(new Error(`server exited with code ${code}`))
         })
 
-        function retry() {
-            if (Date.now() - started > 30000) {
-                reject(new Error('server did not start within 30 seconds'))
-                return
+        let output = ''
+
+        server.stdout.on('data', data => {
+            output += data
+
+            if (output.includes('server running on')) {
+                clearTimeout(timer)
+                resolve()
             }
-
-            setTimeout(attempt, 300)
-        }
-
-        function attempt() {
-            https
-                .get(
-                    {
-                        host: 'localhost',
-                        port,
-                        path: '/health',
-                        rejectUnauthorized: false
-                    },
-                    res => {
-                        res.resume()
-
-                        if (res.statusCode === 200) {
-                            resolve()
-                        } else {
-                            retry()
-                        }
-                    }
-                )
-                .on('error', retry)
-        }
-
-        attempt()
+        })
     })
 }
 
@@ -96,7 +79,7 @@ function runCollection() {
                     'HustleHub_API.postman_collection.json'
                 ),
                 envVar: [{ key: 'baseUrl', value: baseUrl }],
-                insecure: true,
+                sslExtraCaCerts: certPath,
                 reporters: ['cli', 'junit'],
                 reporter: {
                     junit: {
