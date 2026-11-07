@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - part3/main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/part3/main' }}
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  backend:
+    name: Backend unit and API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            postman/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: >-
+          node --test
+          --test-reporter=spec --test-reporter-destination=stdout
+          --test-reporter=junit --test-reporter-destination=unit-junit.xml
+          "tests/**/*.test.js"
+
+      - name: Install API test dependencies
+        working-directory: postman
+        run: npm ci
+
+      - name: Run API tests with Newman
+        working-directory: postman
+        run: npm test
+        env:
+          TEST_MONGO_URI: mongodb://127.0.0.1:27017/hustlehub_test
+
+      - name: Add the Newman summary to the job summary
+        if: ${{ always() }}
+        run: |
+          if [ -f postman/reports/newman-cli.txt ]; then
+            { echo '### Newman results'; echo '```'; tail -n 16 postman/reports/newman-cli.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload test reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-test-reports
+          path: |
+            postman/reports
+            unit-junit.xml
+          if-no-files-found: warn
