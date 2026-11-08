@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { ApiError } = require('../middleware/errorHandler')
+const logger = require('../services/logger')
 
 // Register a new user and securely store their details in MongoDB.
 async function register(req, res, next) {
@@ -64,6 +65,11 @@ async function login(req, res, next) {
 
         // Use the same response for unknown emails and incorrect passwords.
         if (!user) {
+            logger.warn('login_failed', {
+                reason: 'invalid_credentials',
+                emailHash: logger.hashValue(normalizedEmail),
+                ipHash: logger.hashValue(req.ip)
+            })
             throw new ApiError(401, 'invalid email or password')
         }
 
@@ -73,6 +79,12 @@ async function login(req, res, next) {
         )
 
         if (!passwordMatches) {
+            logger.warn('login_failed', {
+                reason: 'invalid_credentials',
+                emailHash: logger.hashValue(normalizedEmail),
+                userId: user._id.toString(),
+                ipHash: logger.hashValue(req.ip)
+            })
             throw new ApiError(401, 'invalid email or password')
         }
 
@@ -88,6 +100,12 @@ async function login(req, res, next) {
                 expiresIn: '1h'
             }
         )
+
+        logger.info('login_succeeded', {
+            userId: user._id.toString(),
+            role: user.role,
+            ipHash: logger.hashValue(req.ip)
+        })
 
         res.status(200).json({
             message: 'login successful',

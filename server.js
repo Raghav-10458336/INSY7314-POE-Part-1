@@ -13,6 +13,8 @@ const gigRoutes = require('./routes/gigRoutes')
 const bookingRoutes = require('./routes/bookingRoutes')
 const incomeRoutes = require('./routes/incomeRoutes')
 const errorHandler = require('./middleware/errorHandler')
+const requestLogger = require('./middleware/requestLogger')
+const logger = require('./services/logger')
 const {
     apiLimiter,
     loginLimiter,
@@ -71,6 +73,9 @@ app.use(
 // Limit request body size to reduce unnecessary resource consumption.
 app.use(express.json({ limit: '100kb' }))
 
+// Record structured request metadata without logging request bodies or tokens.
+app.use(requestLogger)
+
 // Apply general rate limiting to API endpoints.
 app.use('/api', apiLimiter)
 
@@ -114,10 +119,10 @@ async function startServer() {
         }
 
         https.createServer(options, app).listen(PORT, () => {
-            console.log(`server running on https://localhost:${PORT}`)
+            logger.info('server_started', { port: Number(PORT), protocol: 'https' })
         })
     } catch (err) {
-        console.error('Server startup failed:', err.message)
+        logger.error('server_startup_failed', { message: err.message })
         process.exit(1)
     }
 }
