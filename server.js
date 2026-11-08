@@ -118,9 +118,13 @@ async function startServer() {
             )
         }
 
-        https.createServer(options, app).listen(PORT, () => {
-            logger.info('server_started', { port: Number(PORT), protocol: 'https' })
-        })
+     https.createServer(options, app).listen(PORT, () => {
+    console.log(`server running on https://localhost:${PORT}`)
+    logger.info('server_started', {
+        port: Number(PORT),
+        protocol: 'https'
+    })
+})
     } catch (err) {
         logger.error('server_startup_failed', { message: err.message })
         process.exit(1)
