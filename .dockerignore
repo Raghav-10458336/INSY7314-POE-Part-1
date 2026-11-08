@@ -1,0 +1,11 @@
+node_modules
+frontend/node_modules
+frontend/dist
+.git
+.gitignore
+.vs
+.env
+logs/*.log
+screenshots
+coverage
+npm-debug.log*

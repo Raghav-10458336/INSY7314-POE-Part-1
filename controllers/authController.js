@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { ApiError } = require('../middleware/errorHandler')
+const logger = require('../services/logger')
 
 const MAX_FAILED_ATTEMPTS = 5
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000
@@ -56,6 +57,11 @@ async function login(req, res, next) {
         }).select('+password')
 
         if (!user) {
+            logger.warn('login_failed', {
+                reason: 'invalid_credentials',
+                emailHash: logger.hashValue(normalizedEmail),
+                ipHash: logger.hashValue(req.ip)
+            })
             throw new ApiError(401, 'invalid email or password')
         }
 
@@ -74,6 +80,12 @@ async function login(req, res, next) {
         )
 
         if (!passwordMatches) {
+            logger.warn('login_failed', {
+                reason: 'invalid_credentials',
+                emailHash: logger.hashValue(normalizedEmail),
+                userId: user._id.toString(),
+                ipHash: logger.hashValue(req.ip)
+            })
             // Start a new sequence if the previous lockout expired.
             if (user.lockUntil && user.lockUntil <= now) {
                 user.failedLoginAttempts = 0
@@ -111,6 +123,12 @@ async function login(req, res, next) {
                 expiresIn: '1h'
             }
         )
+
+        logger.info('login_succeeded', {
+            userId: user._id.toString(),
+            role: user.role,
+            ipHash: logger.hashValue(req.ip)
+        })
 
         res.status(200).json({
             message: 'login successful',

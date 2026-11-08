@@ -3,6 +3,7 @@ const Gig = require('../models/Gig')
 const Booking = require('../models/Booking')
 const Transaction = require('../models/Transaction')
 const { ApiError } = require('../middleware/errorHandler')
+const logger = require('../services/logger')
 
 async function createBooking(req, res, next) {
     try {
@@ -48,22 +49,45 @@ async function createBooking(req, res, next) {
                 status: 'confirmed'
             })
 
+            logger.info('booking_created', {
+                bookingId: booking._id.toString(),
+                gigId: gig._id.toString(),
+                clientId: req.user.id,
+                freelancerId: gig.freelancer,
+                status: booking.status
+            })
+
+            logger.info('transaction_created', {
+                transactionId: transaction._id.toString(),
+                bookingId: booking._id.toString(),
+                gigId: gig._id.toString(),
+                clientId: req.user.id,
+                freelancerId: gig.freelancer,
+                status: transaction.status
+            })
+
             res.status(201).json({
                 message: 'booking confirmed successfully',
                 booking,
                 transaction
             })
         } catch (transactionError) {
+            logger.error('transaction_creation_failed', {
+                bookingId: booking._id.toString(),
+                gigId: gig._id.toString(),
+                message: 'transaction could not be created'
+            })
+
             // Prevent a booking from remaining without its required transaction.
             try {
                 await Booking.deleteOne({
                     _id: booking._id
                 })
             } catch (rollbackError) {
-                console.error(
-                    'Booking rollback failed after transaction error:',
-                    rollbackError.message
-                )
+                logger.error('booking_rollback_failed', {
+                    bookingId: booking._id.toString(),
+                    message: rollbackError.message
+                })
             }
 
             throw transactionError

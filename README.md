@@ -1823,6 +1823,115 @@ This contribution satisfies the Part 3 requirement for a GitHub Actions pipeline
 
 ---
 
+# Part 3 - Member 3: Docker Containerisation and Logging
+
+## Docker Containerisation
+
+The complete HustleHub+ application can now run as three coordinated Docker services: a React/Nginx frontend, Node.js/Express backend and MongoDB database.
+
+The backend image is defined by the root `Dockerfile`. The frontend uses a separate multi-stage `frontend/Dockerfile`, where Vite builds the production React bundle and Nginx serves the generated static files.
+
+`docker-compose.yml` configures:
+
+- `frontend` - React production build served by Nginx.
+- `backend` - Express HTTPS API.
+- `mongo` - MongoDB database.
+- `hustlehub_network` - dedicated bridge network for container communication.
+- `hustlehub_mongo_data` - persistent MongoDB storage.
+- `hustlehub_backend_logs` - persistent structured backend logs.
+- Health checks and dependency ordering so the backend waits for MongoDB and the frontend waits for the backend.
+- Environment variables for the JWT secret, MongoDB connection and optional Better Stack integration.
+
+The application is started from the repository root using:
+
+```powershell
+docker compose up --build -d
+```
+
+Container status can be verified using:
+
+```powershell
+docker compose ps
+```
+
+The containerised frontend is available at `http://localhost:5173` and the backend health endpoint at `https://localhost:5000/health`.
+
+## Persistent Storage
+
+MongoDB stores its database files in the named `hustlehub_mongo_data` volume. This allows user, gig, booking and transaction data to survive normal container recreation.
+
+Backend JSON log files are stored in the `hustlehub_backend_logs` named volume so operational evidence is not lost when the backend container is replaced.
+
+## Structured Application Logging
+
+Member 3 adds a structured JSON logging service in `services/logger.js` and HTTP request logging middleware in `middleware/requestLogger.js`.
+
+The application records the following operational/security events:
+
+- HTTP requests
+- Successful login attempts
+- Failed login attempts
+- Booking creation
+- Transaction creation
+- Transaction failures
+- Booking rollback failures
+- API errors
+- Server startup and startup failures
+
+Logs are written to the console and to persistent files under `/app/logs` inside the backend container.
+
+## Sensitive Data Protection in Logs
+
+Logging was designed so operational visibility does not expose authentication secrets or personal credentials.
+
+The application does not log request bodies. Passwords, JWTs, authorization headers, cookies, database connection strings, JWT secrets and monitoring tokens are redacted when encountered. Login email addresses and IP addresses are hashed before logging. Booking/transaction logging records identifiers and statuses rather than payment amounts.
+
+The `.env` file and runtime `.log` files are excluded from Git.
+
+## Better Stack Monitoring Integration
+
+The logging service includes optional Better Stack forwarding. When `BETTERSTACK_SOURCE_TOKEN` and `BETTERSTACK_INGESTING_HOST` are supplied through environment variables, the same sanitized structured events are forwarded to Better Stack while local console/file logging continues to operate.
+
+No Better Stack credentials are stored in the repository. The values must be supplied in the local `.env` file or deployment environment.
+
+Example variables are provided in `.env.docker.example`.
+
+## Logging Security Tests
+
+`tests/logger.test.js` verifies that secret fields are redacted and values selected for privacy-preserving correlation are hashed rather than written in their original form.
+
+Run the tests using:
+
+```powershell
+node --test tests/logger.test.js
+```
+
+## Member 3 Evidence
+
+Detailed Docker verification steps, Better Stack setup instructions and the required screenshot checklist are provided in:
+
+```text
+MEMBER3_DOCKER_LOGGING.md
+```
+
+The main Member 3 implementation files are:
+
+```text
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env.docker.example
+frontend/Dockerfile
+frontend/.dockerignore
+frontend/nginx.conf
+services/logger.js
+middleware/requestLogger.js
+controllers/authController.js
+controllers/bookingController.js
+middleware/errorHandler.js
+tests/logger.test.js
+MEMBER3_DOCKER_LOGGING.md
+```
 ---
 
 # Part 3 – Additional Account Security Features and Testing

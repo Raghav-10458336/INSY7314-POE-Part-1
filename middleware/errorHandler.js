@@ -1,6 +1,8 @@
 
 'use strict'
 
+const logger = require('../services/logger')
+
 // Represents an application error that is safe to show to the client.
 class ApiError extends Error {
     constructor(status, message) {
@@ -69,14 +71,17 @@ function errorHandler(err, req, res, next) {
         ? err.message
         : DEFAULT_MESSAGES[status] || 'something went wrong'
 
-    // Log unexpected errors on the server, never in API responses.
-    if (status === 500) {
-        console.error('Unexpected API error:', {
-            method: req.method,
-            path: req.originalUrl,
-            message: err.message
-        })
-    }
+    // Record errors without request bodies, credentials, tokens or stack traces.
+    logger.error('api_error', {
+        method: req.method,
+        path: req.path,
+        statusCode: status,
+        message: isTrustedError ? err.message : 'internal server error',
+        errorType: err.name || 'Error',
+        userId: req.user?.id || null,
+        role: req.user?.role || null,
+        ipHash: logger.hashValue(req.ip)
+    })
 
     res.status(status).json({
         error: message
