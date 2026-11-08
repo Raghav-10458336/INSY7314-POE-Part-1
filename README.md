@@ -1822,3 +1822,97 @@ The static analysis found five results, which were fixed without changing the be
 This contribution satisfies the Part 3 requirement for a GitHub Actions pipeline that runs automatically, installs the dependencies, runs the backend and frontend tests, builds the frontend and fails when a test or check does not pass. It also satisfies the requirement for static code analysis in the pipeline, with the results and an explanation of what they indicate.
 
 ---
+
+---
+
+# Part 3 – Additional Account Security Features and Testing
+
+**Team Member:** Member 4  
+**Student Number:** ST10438099  
+**Responsibility:** Additional authentication security features, security testing, final security review and testing evidence.
+
+## Security Features Implemented
+
+For Part 3, I focused on improving the security of user accounts and authentication. I implemented two additional security features: account-based login lockout and JWT session invalidation after a password change. These features build on the authentication and access control measures already implemented in Part 2.
+
+### Account-Based Login Lockout
+
+The login process now tracks consecutive failed password attempts for each user account. After five incorrect password attempts, the account is locked for 15 minutes. While the lockout is active, further login attempts are rejected, including attempts using the correct password.
+
+The failed login count and lockout expiry are stored in the user's MongoDB record. Once a user logs in successfully, the failed attempt counter is reset and any existing lockout information is cleared.
+
+This feature provides additional protection against repeated password-guessing attempts and makes the lockout information persistent rather than relying only on the current server session.
+
+### Password Change and JWT Session Invalidation
+
+The second feature improves session security when a user changes their password. Previously issued JWTs should no longer provide access after a successful password change.
+
+To achieve this, a `tokenVersion` field was added to the user model. When a password is changed successfully, this value is incremented. The authentication middleware compares the version stored in the database with the version contained in the JWT.
+
+If the values do not match, the token is rejected and the user must log in again with the new password. This helps prevent previously issued tokens from remaining valid after a password change.
+
+## Main Implementation Files
+
+| File | Responsibility |
+|---|---|
+| `models/User.js` | Added `failedLoginAttempts`, `lockUntil` and `tokenVersion` fields. |
+| `controllers/authController.js` | Handles failed login attempts, account lockout, successful-login resets and password changes. |
+| `middleware/authMiddleware.js` | Checks the JWT token version against the current version stored in MongoDB. |
+| `middleware/validation.js` | Includes validation for password-change requests. |
+| `routes/authRoutes.js` | Includes the protected password-change endpoint. |
+
+The password-change endpoint is:
+
+`PATCH /api/auth/change-password`
+
+It requires an authenticated user and validates the password-change request before processing it.
+
+## Testing and Results
+
+I used the existing Postman and Newman API collection to check the updated backend and confirm that the additional authentication changes did not break the existing application functionality.
+
+The local Newman test run completed with the following results:
+
+| Test measure | Result |
+|---|---:|
+| Requests | 96 |
+| Test scripts | 144 |
+| Pre-request scripts | 4 |
+| Assertions | 283 |
+| Failed tests | 0 |
+
+The authentication tests confirmed that incorrect passwords are rejected and that repeated failed login attempts reach the account lockout response of `423 Locked`. The existing API tests also continued to pass, including tests for registration, authentication, gigs, bookings, income, input validation, security headers, CORS, injection attempts and rate limiting.
+
+The corrected implementation was also pushed to the Part 3 branch, and the GitHub Actions workflow completed successfully.
+
+The automated Newman results confirm that the lockout response is reached. Additional manual verification is required to record the complete 15-minute expiry process, successful-login counter reset and rejection of previously issued tokens after a password change.
+
+## Security Review
+
+As part of my contribution, I reviewed the new features alongside the application's existing security controls.
+
+The review covered authentication, password handling, role-based access control, input validation, injection protection, cross-site scripting protection, rate limiting, security headers, CORS, error handling and resource ownership.
+
+The new lockout and token-version checks add further protection to the authentication process without replacing the existing Part 2 controls.
+
+One known limitation is that the failed-login counter currently uses a database read followed by a document save. If multiple failed login requests are processed simultaneously, the updates could overlap and the counter may undercount attempts. An atomic database update would provide stronger protection against this concurrency issue and is a recommended improvement.
+
+## Evidence and Submission
+
+My testing documentation is available in `MEMBER4_TESTING.md`. It includes the implementation details, test instructions, automated test results, manual verification procedures, security review and demonstration plan.
+
+The relevant Part 3 evidence includes:
+
+- Account lockout response after repeated failed login attempts.
+- Successful password-change request.
+- Rejection of a previously issued JWT.
+- Newman API test summary.
+- Successful GitHub Actions workflow.
+
+Screenshots are stored in the project's `screenshots/` directory. Sensitive information such as passwords, JWTs and database credentials must not appear in the evidence.
+
+## Contribution Summary
+
+My Part 3 contribution focused on strengthening account security through an account-based login lockout and JWT session invalidation after password changes. I updated the user model, authentication controller, authentication middleware, validation middleware and authentication routes to support these features.
+
+I also ran the Newman API test suite, which completed with 283 assertions and no failures, and confirmed that the corrected implementation passed the GitHub Actions workflow. The additional work is documented in `MEMBER4_TESTING.md`, together with the security review and the remaining manual verification procedures.
