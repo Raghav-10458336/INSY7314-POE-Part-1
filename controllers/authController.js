@@ -1,18 +1,17 @@
-
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { ApiError } = require('../middleware/errorHandler')
 const logger = require('../services/logger')
 
-// Register a new user and securely store their details in MongoDB.
+const MAX_FAILED_ATTEMPTS = 5
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000
+
 async function register(req, res, next) {
     try {
         const { name, email, password, role } = req.body
-
         const normalizedEmail = email.trim().toLowerCase()
 
-        // Prevent duplicate account registration.
         const existingUser = await User.findOne({
             email: normalizedEmail
         })
@@ -21,7 +20,6 @@ async function register(req, res, next) {
             throw new ApiError(400, 'email already registered')
         }
 
-        // Hash the password before storing it.
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const newUser = await User.create({
@@ -31,7 +29,6 @@ async function register(req, res, next) {
             role
         })
 
-        // Return only safe account details.
         res.status(201).json({
             message: 'user registered successfully',
             user: {
@@ -42,7 +39,6 @@ async function register(req, res, next) {
             }
         })
     } catch (err) {
-        // Handle duplicate emails caused by concurrent registrations.
         if (err.code === 11000) {
             return next(new ApiError(400, 'email already registered'))
         }
@@ -51,19 +47,15 @@ async function register(req, res, next) {
     }
 }
 
-// Authenticate a user and generate a signed JWT.
 async function login(req, res, next) {
     try {
         const { email, password } = req.body
-
         const normalizedEmail = email.trim().toLowerCase()
 
-        // Explicitly retrieve the stored password hash.
         const user = await User.findOne({
             email: normalizedEmail
         }).select('+password')
 
-        // Use the same response for unknown emails and incorrect passwords.
         if (!user) {
             logger.warn('login_failed', {
                 reason: 'invalid_credentials',
@@ -71,6 +63,15 @@ async function login(req, res, next) {
                 ipHash: logger.hashValue(req.ip)
             })
             throw new ApiError(401, 'invalid email or password')
+        }
+
+        const now = new Date()
+
+        if (user.lockUntil && user.lockUntil > now) {
+            throw new ApiError(
+                423,
+                'account temporarily locked. Please try again later.'
+            )
         }
 
         const passwordMatches = await bcrypt.compare(
@@ -85,14 +86,36 @@ async function login(req, res, next) {
                 userId: user._id.toString(),
                 ipHash: logger.hashValue(req.ip)
             })
+            // Start a new sequence if the previous lockout expired.
+            if (user.lockUntil && user.lockUntil <= now) {
+                user.failedLoginAttempts = 0
+                user.lockUntil = null
+            }
+
+            user.failedLoginAttempts =
+                (user.failedLoginAttempts || 0) + 1
+
+            if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
+                user.lockUntil = new Date(
+                    Date.now() + LOCKOUT_DURATION_MS
+                )
+            }
+
+            await user.save()
+
             throw new ApiError(401, 'invalid email or password')
         }
 
-        // Sign the token using the approved algorithm and expiry.
+        // Reset the failed-login counter after successful authentication.
+        user.failedLoginAttempts = 0
+        user.lockUntil = null
+        await user.save()
+
         const token = jwt.sign(
             {
                 id: user._id.toString(),
-                role: user.role
+                role: user.role,
+                tokenVersion: user.tokenVersion || 0
             },
             process.env.JWT_SECRET,
             {
@@ -116,7 +139,55 @@ async function login(req, res, next) {
     }
 }
 
+async function changePassword(req, res, next) {
+    try {
+        const { currentPassword, newPassword } = req.body
+
+        const user = await User.findById(req.user.id)
+            .select('+password')
+
+        if (!user) {
+            throw new ApiError(401, 'unauthorized')
+        }
+
+        const passwordMatches = await bcrypt.compare(
+            currentPassword,
+            user.password
+        )
+
+        if (!passwordMatches) {
+            throw new ApiError(400, 'current password is incorrect')
+        }
+
+        const samePassword = await bcrypt.compare(
+            newPassword,
+            user.password
+        )
+
+        if (samePassword) {
+            throw new ApiError(
+                400,
+                'new password must be different from the current password'
+            )
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10)
+        user.failedLoginAttempts = 0
+        user.lockUntil = null
+        user.tokenVersion = (user.tokenVersion || 0) + 1
+
+        await user.save()
+
+        res.status(200).json({
+            message: 'password changed successfully. Please log in again.'
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
 module.exports = {
     register,
-    login
+    login,
+    changePassword
 }

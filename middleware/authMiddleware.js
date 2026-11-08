@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const User = require('../models/User')
 
-// Verify the JWT and confirm the authenticated user still exists.
+// Verify the JWT, confirm the user exists, and reject revoked sessions.
 async function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization
 
@@ -38,11 +38,28 @@ async function authenticateToken(req, res, next) {
         return res.status(401).json({ error: 'unauthorized' })
     }
 
+    // Reject invalid token-version claims.
+    const tokenVersion = decoded.tokenVersion ?? 0
+
+    if (
+        !Number.isSafeInteger(tokenVersion) ||
+        tokenVersion < 0
+    ) {
+        return res.status(401).json({ error: 'unauthorized' })
+    }
+
     try {
-        // Always retrieve the current role from the database.
-        const user = await User.findById(decoded.id).select('_id role')
+        // Retrieve the current role and token version from the database.
+        const user = await User.findById(decoded.id).select(
+            '_id role tokenVersion'
+        )
 
         if (!user) {
+            return res.status(401).json({ error: 'unauthorized' })
+        }
+
+        // A password change increments tokenVersion, revoking older JWTs.
+        if ((user.tokenVersion ?? 0) !== tokenVersion) {
             return res.status(401).json({ error: 'unauthorized' })
         }
 
