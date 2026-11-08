@@ -49,7 +49,6 @@ const registerValidation = [
         .isIn(['client', 'freelancer'])
         .withMessage('role must be either client or freelancer'),
 
-    // Reject additional fields to prevent unexpected account properties.
     checkExact([], {
         message: 'unexpected registration fields'
     })
@@ -82,6 +81,35 @@ const loginValidation = [
         .withMessage('password must not exceed 72 bytes')
 ]
 
+// Validate password-change details.
+const changePasswordValidation = [
+    body('currentPassword')
+        .isString().withMessage('current password must be text')
+        .bail()
+        .notEmpty().withMessage('current password is required')
+        .bail()
+        .isLength({ max: 128 })
+        .withMessage('current password must not exceed 128 characters')
+        .bail()
+        .custom(value => Buffer.byteLength(value, 'utf8') <= 72)
+        .withMessage('current password must not exceed 72 bytes'),
+
+    body('newPassword')
+        .isString().withMessage('new password must be text')
+        .bail()
+        .notEmpty().withMessage('new password is required')
+        .bail()
+        .isLength({ min: 8, max: 128 })
+        .withMessage('new password must be between 8 and 128 characters')
+        .bail()
+        .custom(value => Buffer.byteLength(value, 'utf8') <= 72)
+        .withMessage('new password must not exceed 72 bytes'),
+
+    checkExact([], {
+        message: 'unexpected password-change fields'
+    })
+]
+
 // Return safe, consistent validation errors.
 function handleValidationErrors(req, res, next) {
     const errors = validationResult(req)
@@ -102,5 +130,6 @@ function handleValidationErrors(req, res, next) {
 module.exports = {
     registerValidation,
     loginValidation,
+    changePasswordValidation,
     handleValidationErrors
 }

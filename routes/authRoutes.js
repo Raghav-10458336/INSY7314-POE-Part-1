@@ -1,15 +1,19 @@
+
 const express = require('express')
 const router = express.Router()
 
 const {
     register,
-    login
+    login,
+    changePassword
 } = require('../controllers/authController')
 
 const authenticateToken = require('../middleware/authMiddleware')
+
 const {
     registerValidation,
     loginValidation,
+    changePasswordValidation,
     handleValidationErrors
 } = require('../middleware/validation')
 
@@ -33,5 +37,14 @@ router.get('/me', authenticateToken, (req, res) => {
         user: req.user
     })
 })
+
+// Change password and invalidate all previously issued JWTs.
+router.patch(
+    '/change-password',
+    authenticateToken,
+    changePasswordValidation,
+    handleValidationErrors,
+    changePassword
+)
 
 module.exports = router
