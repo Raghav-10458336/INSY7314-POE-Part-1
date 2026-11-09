@@ -1,8 +1,23 @@
 # INSY7314-POE-Part-1
 # HustleHub+
-Youtube Link : https://youtu.be/AwQ5rBtG09k
+---
+## Youtube Demo Links 
+
+Part 1 Youtube Link : https://youtu.be/AwQ5rBtG09k
 
 Part 2 Youtube Link : https://www.youtube.com/watch?v=MFMNTNQQZnQ
+
+Part 3 Youtube Link : 
+
+---
+## Group Members
+
+- Shahaan Pillay - ST10438099
+- Raghav Mahraj - ST10458336 
+- Rahil Ramdass - ST10434494 
+- Ophec Funis - ST10089492
+
+---
 
 ## Secure Freelance Marketplace Platform
 
